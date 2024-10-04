@@ -1,8 +1,17 @@
-// TODO: Implement constructor for Connection
-pub struct Connection {
-    source: SourceNeuron,
-    destination: DestinationNeuron,
+pub struct Connection<'a> {
+    source: &'a SourceNeuron,
+    destination: &'a DestinationNeuron,
     weight: f64,
+}
+
+impl<'a> Connection<'a> {
+    pub fn new(source: &'a SourceNeuron, destination: &'a DestinationNeuron, weight: f64) -> Self {
+        Self {
+            source,
+            destination,
+            weight,
+        }
+    }
 }
 
 pub enum SourceNeuron {
