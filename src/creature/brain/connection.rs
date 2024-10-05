@@ -1,4 +1,4 @@
-use crate::brain::neuron::{ActionNeuron, InternalNeuron, SensoryNeuron};
+use super::neuron::{ActionNeuron, InternalNeuron, SensoryNeuron};
 
 pub struct Connection<'a> {
     source: &'a SourceNeuron,
