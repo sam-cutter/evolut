@@ -1,12 +1,12 @@
 pub struct Genome(Vec<Gene>);
 
 use fstr::FStr;
-use std::num::ParseIntError;
+use std::{num::ParseIntError, str::FromStr};
 
 pub struct Gene {
-    pub source_id: u8,
-    pub destination_id: u8,
-    pub weight: f64,
+    source_id: u8,
+    destination_id: u8,
+    weight: f64,
 }
 
 impl Gene {
@@ -24,5 +24,16 @@ impl Gene {
             destination_id,
             weight,
         })
+    }
+
+    pub fn as_hex(&self) -> FStr<20> {
+        let hex = format!(
+            "{:02x}{:02x}{:016x}",
+            self.source_id,
+            self.destination_id,
+            self.weight.to_bits(),
+        );
+
+        FStr::from_str(&hex).unwrap()
     }
 }
