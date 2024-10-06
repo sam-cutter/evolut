@@ -2,4 +2,4 @@ mod gene;
 
 pub use gene::Gene;
 
-pub struct Genome(Vec<Gene>);
+pub type Genome = Vec<Gene>;

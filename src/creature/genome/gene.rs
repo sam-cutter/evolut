@@ -8,6 +8,20 @@ pub struct Gene {
 }
 
 impl Gene {
+    pub fn source_id(&self) -> u8 {
+        self.source_id
+    }
+
+    pub fn destination_id(&self) -> u8 {
+        self.destination_id
+    }
+
+    pub fn weight(&self) -> f64 {
+        self.weight
+    }
+}
+
+impl Gene {
     pub fn from_hex(hex: FStr<20>) -> Result<Self, ParseIntError> {
         let source_id = &hex[0..2];
         let destination_id = &hex[2..4];
