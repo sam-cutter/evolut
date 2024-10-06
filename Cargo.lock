@@ -5,3 +5,12 @@ version = 3
 [[package]]
 name = "evolut"
 version = "0.1.0"
+dependencies = [
+ "fstr",
+]
+
+[[package]]
+name = "fstr"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6560d66181af047310870cbc90cebdd597bb66f7c73e0d5a9e56afae5b6c56c7"
