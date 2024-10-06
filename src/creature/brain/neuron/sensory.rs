@@ -5,6 +5,18 @@ pub enum SensoryNeuron {
     Age,
     Speed,
     AngularVelocity,
-    LinesOfSight,
+    LineOfSight(LineOfSight),
     StoredEnergy,
+}
+
+pub enum LineOfSight {
+    LeftCreature,
+    LeftFood,
+    LeftObstacle,
+    MiddleCreature,
+    MiddleFood,
+    MiddleObstacle,
+    RightCreature,
+    RightFood,
+    RightObstacle,
 }
