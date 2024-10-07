@@ -1,13 +1,13 @@
 use super::neuron::{ActionNeuron, InternalNeuron, SensoryNeuron};
 
 pub struct Connection<'a> {
-    source: &'a SourceNeuron,
-    destination: &'a DestinationNeuron,
+    source: SourceNeuron<'a>,
+    destination: DestinationNeuron<'a>,
     weight: f64,
 }
 
 impl<'a> Connection<'a> {
-    pub fn new(source: &'a SourceNeuron, destination: &'a DestinationNeuron, weight: f64) -> Self {
+    pub fn new(source: SourceNeuron<'a>, destination: DestinationNeuron<'a>, weight: f64) -> Self {
         Self {
             source,
             destination,
@@ -16,12 +16,12 @@ impl<'a> Connection<'a> {
     }
 }
 
-pub enum SourceNeuron {
-    Sensory(SensoryNeuron),
-    Internal(InternalNeuron),
+pub enum SourceNeuron<'a> {
+    Sensory(&'a SensoryNeuron),
+    Internal(&'a InternalNeuron),
 }
 
-pub enum DestinationNeuron {
-    Internal(InternalNeuron),
-    Action(ActionNeuron),
+pub enum DestinationNeuron<'a> {
+    Internal(&'a InternalNeuron),
+    Action(&'a ActionNeuron),
 }

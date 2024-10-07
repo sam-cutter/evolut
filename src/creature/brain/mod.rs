@@ -3,9 +3,8 @@ pub mod neuron;
 
 use super::genome::Genome;
 use crate::simulation::MAX_INTERNAL_NEURONS;
-use connection::Connection;
-use neuron::{ActionNeuron, InternalNeuron, Neurons};
-use neuron::{LineOfSight, SensoryNeuron};
+use connection::{Connection, DestinationNeuron, SourceNeuron};
+use neuron::{ActionNeuron, InternalNeuron, LineOfSight, Neurons, SensoryNeuron};
 
 pub struct Brain<'a> {
     connections: Vec<Connection<'a>>,
@@ -27,8 +26,78 @@ impl<'a> Brain<'a> {
         Step 5: return all connections and neurons.
         */
 
-        let neurons = create_neurons(genome);
+        let neurons: Neurons = create_neurons(genome);
+        let connections: Vec<Connection> = create_connections(genome, &neurons);
     }
+
+    pub fn connections(&self) -> &Vec<Connection<'a>> {
+        &self.connections
+    }
+
+    pub fn neurons(&self) -> &Neurons {
+        &self.neurons
+    }
+}
+
+/// Creates each connection specified in the [Genome] out [Neurons].
+fn create_connections<'a>(genome: &Genome, neurons: &'a Neurons) -> Vec<Connection<'a>> {
+    let mut connections: Vec<Connection> = Vec::new();
+
+    for gene in genome {
+        let source_is_sensory_neuron = gene.source_id() < 128;
+        let source_neuron: SourceNeuron = match source_is_sensory_neuron {
+            true => SourceNeuron::Sensory(
+                &neurons
+                    .sensory()
+                    .iter()
+                    .filter(|(id, _)| *id == gene.source_id())
+                    .collect::<Vec<&(u8, SensoryNeuron)>>()
+                    .first()
+                    .unwrap()
+                    .1,
+            ),
+            false => SourceNeuron::Internal(
+                &neurons
+                    .internal()
+                    .iter()
+                    .filter(|(id, _)| *id == gene.source_id())
+                    .collect::<Vec<&(u8, InternalNeuron)>>()
+                    .first()
+                    .unwrap()
+                    .1,
+            ),
+        };
+
+        let destination_is_action_neuron = gene.destination_id() < 128;
+        let destination_neuron: DestinationNeuron = match destination_is_action_neuron {
+            true => DestinationNeuron::Action(
+                &neurons
+                    .action()
+                    .iter()
+                    .filter(|(id, _)| *id == gene.destination_id())
+                    .collect::<Vec<&(u8, ActionNeuron)>>()
+                    .first()
+                    .unwrap()
+                    .1,
+            ),
+            false => DestinationNeuron::Internal(
+                &neurons
+                    .internal()
+                    .iter()
+                    .filter(|(id, _)| *id == gene.destination_id())
+                    .collect::<Vec<&(u8, InternalNeuron)>>()
+                    .first()
+                    .unwrap()
+                    .1,
+            ),
+        };
+
+        let connection = Connection::new(source_neuron, destination_neuron, gene.weight());
+
+        connections.push(connection);
+    }
+
+    connections
 }
 
 /// Creates all of the neurons required to build every connection specified in a [Genome].
