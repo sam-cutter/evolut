@@ -2,8 +2,9 @@ pub mod connection;
 pub mod neuron;
 
 use super::genome::Genome;
+use crate::simulation::MAX_INTERNAL_NEURONS;
 use connection::Connection;
-use neuron::Neurons;
+use neuron::{ActionNeuron, InternalNeuron, Neurons};
 use neuron::{LineOfSight, SensoryNeuron};
 
 pub struct Brain<'a> {
@@ -26,57 +27,115 @@ impl<'a> Brain<'a> {
         Step 5: return all connections and neurons.
         */
 
-        // Step 1
-        let mut neurons = Neurons::new();
+        let neurons = create_neurons(genome);
+    }
+}
 
-        for gene in genome {
-            if gene.source_id() < 127 {
-                let source_id = (gene.source_id() - 128) % 12;
+/// Creates all of the neurons required to build every connection specified in a [Genome].
+fn create_neurons(genome: &Genome) -> Neurons {
+    let mut neurons = Neurons::new();
 
-                // TODO: export sensory neuron matching to a separate function
-                let neuron: (u8, SensoryNeuron) = match source_id {
-                    0 => (source_id, SensoryNeuron::Age),
-                    1 => (source_id, SensoryNeuron::Speed),
-                    2 => (source_id, SensoryNeuron::AngularVelocity),
-                    3 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::LeftCreature),
-                    ),
-                    4 => (source_id, SensoryNeuron::LineOfSight(LineOfSight::LeftFood)),
-                    5 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::LeftObstacle),
-                    ),
-                    6 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::MiddleCreature),
-                    ),
-                    7 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::MiddleFood),
-                    ),
-                    8 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::MiddleObstacle),
-                    ),
-                    9 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::RightCreature),
-                    ),
-                    10 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::RightFood),
-                    ),
-                    11 => (
-                        source_id,
-                        SensoryNeuron::LineOfSight(LineOfSight::RightObstacle),
-                    ),
-                    12 => (source_id, SensoryNeuron::StoredEnergy),
-                    _ => unreachable!(),
-                };
+    for gene in genome {
+        // Source id
+        let source_is_sensory_neuron = gene.source_id() < 128;
 
-                neurons.push_sensory(neuron);
+        if source_is_sensory_neuron {
+            let source_id = gene.source_id() % 12;
+
+            if neurons.sensory().iter().any(|(id, _)| *id == source_id) {
+                continue;
             }
+
+            let neuron = match_sensory_neuron_id(source_id);
+
+            neurons.push_sensory(neuron);
+        } else {
+            create_internal_neuron(gene.source_id(), &mut neurons);
+        }
+
+        // Destination id
+        let destination_is_action_neuron = gene.destination_id() < 128;
+
+        if destination_is_action_neuron {
+            let destination_id = gene.destination_id() % 2;
+
+            if neurons.action().iter().any(|(id, _)| *id == destination_id) {
+                continue;
+            }
+
+            let neuron = match_action_neuron_id(destination_id);
+
+            neurons.push_action(neuron);
+        } else {
+            create_internal_neuron(gene.destination_id(), &mut neurons);
         }
     }
+
+    neurons
+}
+
+/// Matches a sensory neuron id to the correct variant of [SensoryNeuron].
+fn match_sensory_neuron_id(source_id: u8) -> (u8, SensoryNeuron) {
+    match source_id {
+        0 => (source_id, SensoryNeuron::Age),
+        1 => (source_id, SensoryNeuron::Speed),
+        2 => (source_id, SensoryNeuron::AngularVelocity),
+        3 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::LeftCreature),
+        ),
+        4 => (source_id, SensoryNeuron::LineOfSight(LineOfSight::LeftFood)),
+        5 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::LeftObstacle),
+        ),
+        6 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::MiddleCreature),
+        ),
+        7 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::MiddleFood),
+        ),
+        8 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::MiddleObstacle),
+        ),
+        9 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::RightCreature),
+        ),
+        10 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::RightFood),
+        ),
+        11 => (
+            source_id,
+            SensoryNeuron::LineOfSight(LineOfSight::RightObstacle),
+        ),
+        12 => (source_id, SensoryNeuron::StoredEnergy),
+        _ => unreachable!(),
+    }
+}
+
+/// Matches an action neuron id to the correct variant of [ActionNeuron].
+fn match_action_neuron_id(destination_id: u8) -> (u8, ActionNeuron) {
+    match destination_id {
+        0 => (destination_id, ActionNeuron::Acceleration),
+        1 => (destination_id, ActionNeuron::AngularAcceleration),
+        _ => unreachable!(),
+    }
+}
+
+/// Creates an [InternalNeuron].
+fn create_internal_neuron(neuron_id: u8, neurons: &mut Neurons) {
+    let neuron_id = (neuron_id - 128) % MAX_INTERNAL_NEURONS;
+
+    if neurons.internal().iter().any(|(id, _)| *id == neuron_id) {
+        return;
+    }
+
+    let neuron = (neuron_id, InternalNeuron);
+
+    neurons.push_internal(neuron);
 }
