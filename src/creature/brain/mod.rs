@@ -5,15 +5,16 @@ use super::genome::Genome;
 use crate::simulation::MAX_INTERNAL_NEURONS;
 use connection::{Connection, DestinationNeuron, SourceNeuron};
 use neuron::{ActionNeuron, InternalNeuron, LineOfSight, Neurons, SensoryNeuron};
+use std::rc::Rc;
 
-pub struct Brain<'a> {
-    connections: Vec<Connection<'a>>,
+pub struct Brain {
+    connections: Vec<Connection>,
     neurons: Neurons,
 }
 
 // TODO: Implement constructor
-impl<'a> Brain<'a> {
-    pub fn new(genome: &Genome) {
+impl Brain {
+    pub fn new(genome: &Genome) -> Self {
         /*
         Step 1: creating required neurons.
             For each specified connection in the genome, the source and destination neurons will be created.
@@ -28,9 +29,14 @@ impl<'a> Brain<'a> {
 
         let neurons: Neurons = create_neurons(genome);
         let connections: Vec<Connection> = create_connections(genome, &neurons);
+
+        Self {
+            connections,
+            neurons,
+        }
     }
 
-    pub fn connections(&self) -> &Vec<Connection<'a>> {
+    pub fn connections(&self) -> &Vec<Connection> {
         &self.connections
     }
 
@@ -40,57 +46,63 @@ impl<'a> Brain<'a> {
 }
 
 /// Creates each connection specified in the [Genome] out [Neurons].
-fn create_connections<'a>(genome: &Genome, neurons: &'a Neurons) -> Vec<Connection<'a>> {
+fn create_connections<'a>(genome: &Genome, neurons: &'a Neurons) -> Vec<Connection> {
     let mut connections: Vec<Connection> = Vec::new();
 
     for gene in genome {
+        let source_neuron: SourceNeuron;
         let source_is_sensory_neuron = gene.source_id() < 128;
-        let source_neuron: SourceNeuron = match source_is_sensory_neuron {
-            true => SourceNeuron::Sensory(
+
+        if source_is_sensory_neuron {
+            source_neuron = SourceNeuron::Sensory(Rc::clone(
                 &neurons
                     .sensory()
                     .iter()
-                    .filter(|(id, _)| *id == gene.source_id())
-                    .collect::<Vec<&(u8, SensoryNeuron)>>()
+                    .filter(|(id, _)| *id == calculate_sensory_neuron_id(gene.source_id()))
+                    .collect::<Vec<&(u8, Rc<SensoryNeuron>)>>()
                     .first()
                     .unwrap()
                     .1,
-            ),
-            false => SourceNeuron::Internal(
+            ));
+        } else {
+            source_neuron = SourceNeuron::Internal(Rc::clone(
                 &neurons
                     .internal()
                     .iter()
-                    .filter(|(id, _)| *id == gene.source_id())
-                    .collect::<Vec<&(u8, InternalNeuron)>>()
+                    .filter(|(id, _)| *id == calculate_internal_neuron_id(gene.source_id()))
+                    .collect::<Vec<&(u8, Rc<InternalNeuron>)>>()
                     .first()
                     .unwrap()
                     .1,
-            ),
-        };
+            ));
+        }
 
+        let destination_neuron: DestinationNeuron;
         let destination_is_action_neuron = gene.destination_id() < 128;
-        let destination_neuron: DestinationNeuron = match destination_is_action_neuron {
-            true => DestinationNeuron::Action(
+
+        if destination_is_action_neuron {
+            destination_neuron = DestinationNeuron::Action(Rc::clone(
                 &neurons
                     .action()
                     .iter()
-                    .filter(|(id, _)| *id == gene.destination_id())
-                    .collect::<Vec<&(u8, ActionNeuron)>>()
+                    .filter(|(id, _)| *id == calculate_action_neuron_id(gene.destination_id()))
+                    .collect::<Vec<&(u8, Rc<ActionNeuron>)>>()
                     .first()
                     .unwrap()
                     .1,
-            ),
-            false => DestinationNeuron::Internal(
+            ));
+        } else {
+            destination_neuron = DestinationNeuron::Internal(Rc::clone(
                 &neurons
                     .internal()
                     .iter()
-                    .filter(|(id, _)| *id == gene.destination_id())
-                    .collect::<Vec<&(u8, InternalNeuron)>>()
+                    .filter(|(id, _)| *id == calculate_internal_neuron_id(gene.destination_id()))
+                    .collect::<Vec<&(u8, Rc<InternalNeuron>)>>()
                     .first()
                     .unwrap()
                     .1,
-            ),
-        };
+            ));
+        }
 
         let connection = Connection::new(source_neuron, destination_neuron, gene.weight());
 
@@ -109,13 +121,17 @@ fn create_neurons(genome: &Genome) -> Neurons {
         let source_is_sensory_neuron = gene.source_id() < 128;
 
         if source_is_sensory_neuron {
-            let source_id = gene.source_id() % 12;
+            let sensory_neuron_id = calculate_sensory_neuron_id(gene.source_id());
 
-            if neurons.sensory().iter().any(|(id, _)| *id == source_id) {
+            if neurons
+                .sensory()
+                .iter()
+                .any(|(id, _)| *id == sensory_neuron_id)
+            {
                 continue;
             }
 
-            let neuron = match_sensory_neuron_id(source_id);
+            let neuron = match_sensory_neuron_id(sensory_neuron_id);
 
             neurons.push_sensory(neuron);
         } else {
@@ -126,13 +142,17 @@ fn create_neurons(genome: &Genome) -> Neurons {
         let destination_is_action_neuron = gene.destination_id() < 128;
 
         if destination_is_action_neuron {
-            let destination_id = gene.destination_id() % 2;
+            let action_neuron_id = calculate_action_neuron_id(gene.destination_id());
 
-            if neurons.action().iter().any(|(id, _)| *id == destination_id) {
+            if neurons
+                .action()
+                .iter()
+                .any(|(id, _)| *id == action_neuron_id)
+            {
                 continue;
             }
 
-            let neuron = match_action_neuron_id(destination_id);
+            let neuron = match_action_neuron_id(action_neuron_id);
 
             neurons.push_action(neuron);
         } else {
@@ -144,67 +164,86 @@ fn create_neurons(genome: &Genome) -> Neurons {
 }
 
 /// Matches a sensory neuron id to the correct variant of [SensoryNeuron].
-fn match_sensory_neuron_id(source_id: u8) -> (u8, SensoryNeuron) {
-    match source_id {
-        0 => (source_id, SensoryNeuron::Age),
-        1 => (source_id, SensoryNeuron::Speed),
-        2 => (source_id, SensoryNeuron::AngularVelocity),
+fn match_sensory_neuron_id(sensory_neuron_id: u8) -> (u8, Rc<SensoryNeuron>) {
+    match sensory_neuron_id {
+        0 => (sensory_neuron_id, Rc::new(SensoryNeuron::Age)),
+        1 => (sensory_neuron_id, Rc::new(SensoryNeuron::Speed)),
+        2 => (sensory_neuron_id, Rc::new(SensoryNeuron::AngularVelocity)),
         3 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::LeftCreature),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::LeftCreature)),
         ),
-        4 => (source_id, SensoryNeuron::LineOfSight(LineOfSight::LeftFood)),
+        4 => (
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::LeftFood)),
+        ),
         5 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::LeftObstacle),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::LeftObstacle)),
         ),
         6 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::MiddleCreature),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::MiddleCreature)),
         ),
         7 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::MiddleFood),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::MiddleFood)),
         ),
         8 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::MiddleObstacle),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::MiddleObstacle)),
         ),
         9 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::RightCreature),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::RightCreature)),
         ),
         10 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::RightFood),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::RightFood)),
         ),
         11 => (
-            source_id,
-            SensoryNeuron::LineOfSight(LineOfSight::RightObstacle),
+            sensory_neuron_id,
+            Rc::new(SensoryNeuron::LineOfSight(LineOfSight::RightObstacle)),
         ),
-        12 => (source_id, SensoryNeuron::StoredEnergy),
+        12 => (sensory_neuron_id, Rc::new(SensoryNeuron::StoredEnergy)),
         _ => unreachable!(),
     }
 }
 
 /// Matches an action neuron id to the correct variant of [ActionNeuron].
-fn match_action_neuron_id(destination_id: u8) -> (u8, ActionNeuron) {
-    match destination_id {
-        0 => (destination_id, ActionNeuron::Acceleration),
-        1 => (destination_id, ActionNeuron::AngularAcceleration),
+fn match_action_neuron_id(action_neuron_id: u8) -> (u8, Rc<ActionNeuron>) {
+    match action_neuron_id {
+        0 => (action_neuron_id, Rc::new(ActionNeuron::Acceleration)),
+        1 => (action_neuron_id, Rc::new(ActionNeuron::AngularAcceleration)),
         _ => unreachable!(),
     }
 }
 
 /// Creates an [InternalNeuron].
-fn create_internal_neuron(neuron_id: u8, neurons: &mut Neurons) {
-    let neuron_id = (neuron_id - 128) % MAX_INTERNAL_NEURONS;
+fn create_internal_neuron(destination_id: u8, neurons: &mut Neurons) {
+    let internal_neuron_id = calculate_internal_neuron_id(destination_id);
 
-    if neurons.internal().iter().any(|(id, _)| *id == neuron_id) {
+    if neurons
+        .internal()
+        .iter()
+        .any(|(id, _)| *id == internal_neuron_id)
+    {
         return;
     }
 
-    let neuron = (neuron_id, InternalNeuron);
+    let neuron = (internal_neuron_id, Rc::new(InternalNeuron));
 
     neurons.push_internal(neuron);
+}
+
+fn calculate_sensory_neuron_id(source_id: u8) -> u8 {
+    source_id % 12
+}
+
+fn calculate_action_neuron_id(destination_id: u8) -> u8 {
+    destination_id % 2
+}
+
+fn calculate_internal_neuron_id(id: u8) -> u8 {
+    (id - 128) % MAX_INTERNAL_NEURONS
 }
