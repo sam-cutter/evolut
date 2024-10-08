@@ -45,6 +45,57 @@ impl Brain {
     }
 }
 
+/// Creates all of the neurons required to build every connection specified in a [Genome].
+fn create_neurons(genome: &Genome) -> Neurons {
+    let mut neurons = Neurons::new();
+
+    for gene in genome {
+        // Source id
+        let source_is_sensory_neuron = gene.source_id() < 128;
+
+        if source_is_sensory_neuron {
+            let sensory_neuron_id = calculate_sensory_neuron_id(gene.source_id());
+
+            if neurons
+                .sensory()
+                .iter()
+                .any(|(id, _)| *id == sensory_neuron_id)
+            {
+                continue;
+            }
+
+            let neuron = match_sensory_neuron_id(sensory_neuron_id);
+
+            neurons.push_sensory(neuron);
+        } else {
+            create_internal_neuron(gene.source_id(), &mut neurons);
+        }
+
+        // Destination id
+        let destination_is_action_neuron = gene.destination_id() < 128;
+
+        if destination_is_action_neuron {
+            let action_neuron_id = calculate_action_neuron_id(gene.destination_id());
+
+            if neurons
+                .action()
+                .iter()
+                .any(|(id, _)| *id == action_neuron_id)
+            {
+                continue;
+            }
+
+            let neuron = match_action_neuron_id(action_neuron_id);
+
+            neurons.push_action(neuron);
+        } else {
+            create_internal_neuron(gene.destination_id(), &mut neurons);
+        }
+    }
+
+    neurons
+}
+
 /// Creates each connection specified in the [Genome] out [Neurons].
 fn create_connections<'a>(genome: &Genome, neurons: &'a Neurons) -> Vec<Connection> {
     let mut connections: Vec<Connection> = Vec::new();
@@ -110,57 +161,6 @@ fn create_connections<'a>(genome: &Genome, neurons: &'a Neurons) -> Vec<Connecti
     }
 
     connections
-}
-
-/// Creates all of the neurons required to build every connection specified in a [Genome].
-fn create_neurons(genome: &Genome) -> Neurons {
-    let mut neurons = Neurons::new();
-
-    for gene in genome {
-        // Source id
-        let source_is_sensory_neuron = gene.source_id() < 128;
-
-        if source_is_sensory_neuron {
-            let sensory_neuron_id = calculate_sensory_neuron_id(gene.source_id());
-
-            if neurons
-                .sensory()
-                .iter()
-                .any(|(id, _)| *id == sensory_neuron_id)
-            {
-                continue;
-            }
-
-            let neuron = match_sensory_neuron_id(sensory_neuron_id);
-
-            neurons.push_sensory(neuron);
-        } else {
-            create_internal_neuron(gene.source_id(), &mut neurons);
-        }
-
-        // Destination id
-        let destination_is_action_neuron = gene.destination_id() < 128;
-
-        if destination_is_action_neuron {
-            let action_neuron_id = calculate_action_neuron_id(gene.destination_id());
-
-            if neurons
-                .action()
-                .iter()
-                .any(|(id, _)| *id == action_neuron_id)
-            {
-                continue;
-            }
-
-            let neuron = match_action_neuron_id(action_neuron_id);
-
-            neurons.push_action(neuron);
-        } else {
-            create_internal_neuron(gene.destination_id(), &mut neurons);
-        }
-    }
-
-    neurons
 }
 
 /// Matches a sensory neuron id to the correct variant of [SensoryNeuron].
