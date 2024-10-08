@@ -1,27 +1,40 @@
 use super::neuron::{ActionNeuron, InternalNeuron, SensoryNeuron};
+use std::rc::Rc;
 
-pub struct Connection<'a> {
-    source: SourceNeuron<'a>,
-    destination: DestinationNeuron<'a>,
+pub struct Connection {
+    source: SourceNeuron,
+    destination: DestinationNeuron,
     weight: f64,
 }
 
-impl<'a> Connection<'a> {
-    pub fn new(source: SourceNeuron<'a>, destination: DestinationNeuron<'a>, weight: f64) -> Self {
+impl Connection {
+    pub fn new(source: SourceNeuron, destination: DestinationNeuron, weight: f64) -> Self {
         Self {
             source,
             destination,
             weight,
         }
     }
+
+    pub fn source(&self) -> &SourceNeuron {
+        &self.source
+    }
+
+    pub fn destination(&self) -> &DestinationNeuron {
+        &self.destination
+    }
+
+    pub fn weight(&self) -> f64 {
+        self.weight
+    }
 }
 
-pub enum SourceNeuron<'a> {
-    Sensory(&'a SensoryNeuron),
-    Internal(&'a InternalNeuron),
+pub enum SourceNeuron {
+    Sensory(Rc<SensoryNeuron>),
+    Internal(Rc<InternalNeuron>),
 }
 
-pub enum DestinationNeuron<'a> {
-    Internal(&'a InternalNeuron),
-    Action(&'a ActionNeuron),
+pub enum DestinationNeuron {
+    Internal(Rc<InternalNeuron>),
+    Action(Rc<ActionNeuron>),
 }
