@@ -22,6 +22,13 @@ impl Gene {
 }
 
 impl Gene {
+    pub fn new(source_id: u8, destination_id: u8, weight: f64) -> Self {
+        Self {
+            source_id,
+            destination_id,
+            weight,
+        }
+    }
     pub fn from_hex(hex: FStr<20>) -> Result<Self, ParseIntError> {
         let source_id = &hex[0..2];
         let destination_id = &hex[2..4];
@@ -31,11 +38,7 @@ impl Gene {
         let destination_id = u8::from_str_radix(destination_id, 16)?;
         let weight = f64::from_bits(u64::from_str_radix(weight, 16)?);
 
-        Ok(Self {
-            source_id,
-            destination_id,
-            weight,
-        })
+        Ok(Gene::new(source_id, destination_id, weight))
     }
 
     pub fn as_hex(&self) -> FStr<20> {
