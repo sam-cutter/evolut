@@ -8,6 +8,7 @@ pub use action::ActionNeuron;
 pub use internal::InternalNeuron;
 pub use sensory::SensoryNeuron;
 
+#[derive(Debug)]
 pub enum Neuron {
     Sensory(Rc<SensoryNeuron>),
     Internal(Rc<InternalNeuron>),

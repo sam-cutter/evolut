@@ -1,5 +1,6 @@
 use super::super::connection::Connection;
 
+#[derive(Debug)]
 pub struct InternalNeuron {
     inputs: Vec<Connection>,
 }

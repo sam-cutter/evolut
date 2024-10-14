@@ -1,5 +1,6 @@
 use super::super::connection::Connection;
 
+#[derive(Debug)]
 pub struct ActionNeuron {
     inputs: Vec<Connection>,
     output: ActionOutput,
@@ -17,6 +18,7 @@ impl ActionNeuron {
     }
 }
 
+#[derive(Debug)]
 pub enum ActionOutput {
     Acceleration,
     AngularAcceleration,

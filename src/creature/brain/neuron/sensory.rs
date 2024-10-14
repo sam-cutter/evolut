@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct SensoryNeuron {
     input: SensoryInput,
 }
@@ -28,6 +29,7 @@ impl SensoryNeuron {
     }
 }
 
+#[derive(Debug)]
 pub enum SensoryInput {
     Age,
     Speed,
@@ -36,6 +38,7 @@ pub enum SensoryInput {
     StoredEnergy,
 }
 
+#[derive(Debug)]
 pub enum LineOfSight {
     LeftCreature,
     LeftFood,
