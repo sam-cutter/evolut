@@ -1,3 +1,8 @@
+//! A collection of neurons.
+//!
+//! The brain is a neural network, where the sensory neurons are the inputs to the network, and the action neurons
+//! are the outputs, directly modifying the behaviour of the creature.
+
 pub mod connection;
 pub mod neuron;
 
@@ -85,16 +90,18 @@ impl Brain {
 }
 
 fn build_tree(
-    neuron_id: u8,
-    working_genome: &mut Vec<Option<Gene>>,
-    working_neurons: &mut Vec<(u8, Neuron)>,
-    visited_neurons: &mut Vec<u8>,
+    neuron_id: u8, // The id of the neuron whose tree is to be built
+    working_genome: &mut Vec<Option<Gene>>, // The list of genes which have not already been used/discarded
+    working_neurons: &mut Vec<(u8, Neuron)>, // The list of neurons whose trees have been built
+    visited_neurons: &mut Vec<u8>,          // The ids of the neurons who have already been visited
 ) -> Option<Neuron> {
+    // The list of connection inputs for the current neuron
     let mut inputs: Vec<Connection> = Vec::new();
 
     let mut gene_index = 0;
 
     while gene_index < working_genome.len() {
+        // Ignore any genes whose destination ids aren't the current neuron id
         if !working_genome[gene_index]
             .as_ref()
             .is_some_and(|g| g.destination_id() == neuron_id)
@@ -103,17 +110,22 @@ fn build_tree(
             continue;
         }
 
+        // Get the source id and weight of the gene
         let source_id = working_genome[gene_index].as_ref().unwrap().source_id();
         let weight = working_genome[gene_index].as_ref().unwrap().weight();
 
+        // If the most significant bit of the source id is 0 (i.e. the source id is less than 128), the source is a sensory neuron
         let source_is_sensory_neuron = source_id < 128;
         let source_is_internal_neuron = !source_is_sensory_neuron;
 
+        // Mark the gene as used, so it won't be built again
         working_genome[gene_index] = None;
 
+        // See whether the source neuron has already been created (i.e. its tree has already been built)
         let mut source_neuron_search = working_neurons.iter().filter(|(id, _)| *id == source_id);
 
         if let Some((_, source_neuron)) = source_neuron_search.next() {
+            // If the source neuron has already been created, create a new connection and add it to the list of inputs
             let input = Connection::new(
                 match source_neuron {
                     Neuron::Sensory(sensory_neuron) => {
@@ -129,31 +141,42 @@ fn build_tree(
 
             inputs.push(input);
         } else if source_neuron_search.next().is_none() && source_is_sensory_neuron {
+            // If the source neuron hasn't yet been created, and the source is a sensory neuron, create it
             let sensory_neuron = Rc::new(SensoryNeuron::new(source_id));
 
+            // Add the sensory neuron to the list of neurons whose trees have been built
             working_neurons.push((source_id, Neuron::Sensory(Rc::clone(&sensory_neuron))));
 
+            // Create a connection to this new neuron and add it to the list of inputs
             let input = Connection::new(InputNeuron::Sensory(Rc::clone(&sensory_neuron)), weight);
 
             inputs.push(input);
         } else if source_neuron_search.next().is_none() && source_is_internal_neuron {
             if visited_neurons.contains(&source_id) {
+                // If the source neuron has already been visited while building an upstream tree, this means that the genome
+                // is coding for a loop or cycle. I am not allowing this, so we should discard this gene.
                 continue;
             }
 
+            // Mark the source neuron as visited
             visited_neurons.push(source_id);
 
+            // Build the tree of the source neuron
             let neuron = build_tree(source_id, working_genome, working_neurons, visited_neurons);
 
             if let Some(neuron) = neuron {
+                // If the source neuron was actually created (i.e. a valid tree could be built),
+                // create a connection sourcing the returned neuron. Since, at this point, we know that we are working with an internal
+                // neuron, we know that something has gone wrong if anything else is returned.
                 match neuron {
                     Neuron::Internal(internal_neuron) => {
+                        working_neurons
+                            .push((source_id, Neuron::Internal(Rc::clone(&internal_neuron))));
+
                         let input = Connection::new(
                             InputNeuron::Internal(Rc::clone(&internal_neuron)),
                             weight,
                         );
-
-                        working_neurons.push((source_id, Neuron::Internal(internal_neuron)));
 
                         inputs.push(input);
                     }
@@ -161,6 +184,7 @@ fn build_tree(
                 }
             }
 
+            // Remove this neuron from the visited neurons stack
             visited_neurons.pop();
         }
 
