@@ -1,8 +1,4 @@
-//! A collection of neurons.
-//!
-//! The brain is a neural network, where the sensory neurons are the inputs to the network, and the action neurons
-//! are the outputs, directly modifying the behaviour of the creature.
-
+//! Houses all code related to a creature's brain.
 pub mod connection;
 pub mod neuron;
 
@@ -13,17 +9,27 @@ use crate::simulation::MAX_INTERNAL_NEURONS;
 use connection::{Connection, InputNeuron};
 use neuron::{ActionNeuron, InternalNeuron, Neuron, SensoryNeuron};
 
+/// A collection of neurons.
+///
+/// The brain is a neural network, where the sensory neurons are the inputs to the network, and the action neurons
+/// are the outputs, directly modifying the behaviour of the creature.
+
 pub struct Brain {
     neurons: Vec<Neuron>,
 }
 
 impl Brain {
+    /// Builds a new brain from a genome.
     pub fn new(genome: &Genome) -> Self {
+        // Build the working genome
         let mut working_genome: Vec<Option<Gene>> = genome
             .iter()
             .map(|gene| {
+                // Calculating new source/destination ids is essential in order to know whether two neurons are the same.
+
                 let source_is_sensory_neuron = gene.source_id() < 128;
 
+                // Calculate the global source id
                 let source_id = if source_is_sensory_neuron {
                     calculate_sensory_neuron_id(gene.source_id())
                 } else {
@@ -32,6 +38,7 @@ impl Brain {
 
                 let destination_is_action_neuron = gene.destination_id() < 128;
 
+                // Calculate the global destination id
                 let destination_id = if destination_is_action_neuron {
                     calculate_action_neuron_id(gene.destination_id())
                 } else {
@@ -51,6 +58,8 @@ impl Brain {
                 .as_ref()
                 .is_some_and(|g| g.destination_id() < 128)
             {
+                // For each action neuron, build its tree
+
                 let neuron_id = working_genome[gene_index]
                     .as_ref()
                     .unwrap()
@@ -58,14 +67,14 @@ impl Brain {
 
                 let mut visited_neurons = vec![neuron_id];
 
-                let input = build_tree(
+                let action_neuron = build_tree(
                     neuron_id,
                     &mut working_genome,
                     &mut working_neurons,
                     &mut visited_neurons,
                 );
 
-                if let Some(neuron) = input {
+                if let Some(neuron) = action_neuron {
                     match neuron {
                         Neuron::Action(_) => working_neurons.push((neuron_id, neuron)),
                         _ => unreachable!(),
@@ -84,6 +93,7 @@ impl Brain {
         Self { neurons }
     }
 
+    /// Returns a reference to its neurons
     pub fn neurons(&self) -> &Vec<Neuron> {
         &self.neurons
     }
