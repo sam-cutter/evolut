@@ -5,7 +5,7 @@ use std::{num::ParseIntError, str::FromStr};
 ///
 /// A gene represents one neural connection in a creature's brain.
 ///
-/// See also: [crate::creature::brain::Brain] and [crate::creature::brain::connection::Connection].
+/// See also: [crate::creature::brain::Brain] and [crate::creature::brain::Connection].
 pub struct Gene {
     /// The source of the connection.
     /// If the most significant bit of the source id is a 0 (i.e. less than 128), the source is a sensory neuron.

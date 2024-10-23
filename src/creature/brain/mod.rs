@@ -1,13 +1,13 @@
 //! Houses all code related to a creature's brain.
-pub mod connection;
-pub mod neuron;
+mod connection;
+mod neuron;
 
 use std::rc::Rc;
 
 use super::genome::{Gene, Genome};
 use crate::simulation::MAX_INTERNAL_NEURONS;
-use connection::{Connection, InputNeuron};
-use neuron::{ActionNeuron, InternalNeuron, Neuron, SensoryNeuron};
+pub use connection::{Connection, InputNeuron};
+pub use neuron::{ActionNeuron, InternalNeuron, Neuron, SensoryNeuron};
 
 /// A collection of neurons.
 ///
@@ -93,7 +93,7 @@ impl Brain {
         Self { neurons }
     }
 
-    /// Returns a reference to its neurons
+    /// Returns a reference to its neurons.
     pub fn neurons(&self) -> &Vec<Neuron> {
         &self.neurons
     }

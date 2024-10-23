@@ -1,9 +1,11 @@
+/// The inputs to the neural network.
 #[derive(Debug)]
 pub struct SensoryNeuron {
     input: SensoryInput,
 }
 
 impl SensoryNeuron {
+    /// Creates a new sensory neuron.
     pub fn new(sensory_neuron_id: u8) -> Self {
         let input = match sensory_neuron_id {
             0 => SensoryInput::Age,

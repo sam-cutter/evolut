@@ -1,6 +1,6 @@
-pub mod action;
-pub mod internal;
-pub mod sensory;
+mod action;
+mod internal;
+mod sensory;
 
 use std::rc::Rc;
 
@@ -8,6 +8,7 @@ pub use action::ActionNeuron;
 pub use internal::InternalNeuron;
 pub use sensory::SensoryNeuron;
 
+/// Has a variant for each type of neuron.
 #[derive(Debug)]
 pub enum Neuron {
     Sensory(Rc<SensoryNeuron>),
