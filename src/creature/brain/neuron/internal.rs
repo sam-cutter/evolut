@@ -11,4 +11,8 @@ impl InternalNeuron {
     pub fn new(inputs: Vec<Connection>) -> Self {
         Self { inputs }
     }
+
+    pub fn inputs(&self) -> &Vec<Connection> {
+        &self.inputs
+    }
 }
