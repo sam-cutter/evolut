@@ -14,6 +14,14 @@ impl Connection {
     pub fn new(input: InputNeuron, weight: f64) -> Self {
         Self { input, weight }
     }
+
+    pub fn input(&self) -> &InputNeuron {
+        &self.input
+    }
+
+    pub fn weight(&self) -> f64 {
+        self.weight
+    }
 }
 
 /// Represents the specific neuron which a connection depends upon.
