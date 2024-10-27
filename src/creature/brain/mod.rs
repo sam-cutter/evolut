@@ -1,4 +1,5 @@
 //! Houses all code related to a creature's brain.
+
 mod connection;
 mod neuron;
 
