@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::neuron::{InternalNeuron, SensoryNeuron};
 
@@ -19,6 +19,6 @@ impl Connection {
 /// Represents the specific neuron which a connection depends upon.
 #[derive(Debug)]
 pub enum InputNeuron {
-    Sensory(Rc<SensoryNeuron>),
-    Internal(Rc<InternalNeuron>),
+    Sensory(Arc<SensoryNeuron>),
+    Internal(Arc<InternalNeuron>),
 }

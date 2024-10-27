@@ -3,7 +3,7 @@
 mod connection;
 mod neuron;
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::genome::{Gene, Genome};
 use crate::simulation::MAX_INTERNAL_NEURONS;
@@ -140,10 +140,10 @@ fn build_tree(
             let input = Connection::new(
                 match source_neuron {
                     Neuron::Sensory(sensory_neuron) => {
-                        InputNeuron::Sensory(Rc::clone(sensory_neuron))
+                        InputNeuron::Sensory(Arc::clone(sensory_neuron))
                     }
                     Neuron::Internal(internal_neuron) => {
-                        InputNeuron::Internal(Rc::clone(internal_neuron))
+                        InputNeuron::Internal(Arc::clone(internal_neuron))
                     }
                     Neuron::Action(_) => unreachable!(),
                 },
@@ -153,13 +153,13 @@ fn build_tree(
             inputs.push(input);
         } else if source_neuron_search.next().is_none() && source_is_sensory_neuron {
             // If the source neuron hasn't yet been created, and the source is a sensory neuron, create it
-            let sensory_neuron = Rc::new(SensoryNeuron::new(source_id));
+            let sensory_neuron = Arc::new(SensoryNeuron::new(source_id));
 
             // Add the sensory neuron to the list of neurons whose trees have been built
-            working_neurons.push((source_id, Neuron::Sensory(Rc::clone(&sensory_neuron))));
+            working_neurons.push((source_id, Neuron::Sensory(Arc::clone(&sensory_neuron))));
 
             // Create a connection to this new neuron and add it to the list of inputs
-            let input = Connection::new(InputNeuron::Sensory(Rc::clone(&sensory_neuron)), weight);
+            let input = Connection::new(InputNeuron::Sensory(Arc::clone(&sensory_neuron)), weight);
 
             inputs.push(input);
         } else if source_neuron_search.next().is_none() && source_is_internal_neuron {
@@ -182,10 +182,10 @@ fn build_tree(
                 match neuron {
                     Neuron::Internal(internal_neuron) => {
                         working_neurons
-                            .push((source_id, Neuron::Internal(Rc::clone(&internal_neuron))));
+                            .push((source_id, Neuron::Internal(Arc::clone(&internal_neuron))));
 
                         let input = Connection::new(
-                            InputNeuron::Internal(Rc::clone(&internal_neuron)),
+                            InputNeuron::Internal(Arc::clone(&internal_neuron)),
                             weight,
                         );
 
@@ -209,11 +209,11 @@ fn build_tree(
     let neuron_is_action_neuron = neuron_id < 128;
 
     if neuron_is_action_neuron {
-        return Some(Neuron::Action(Rc::new(ActionNeuron::new(
+        return Some(Neuron::Action(Arc::new(ActionNeuron::new(
             neuron_id, inputs,
         ))));
     } else {
-        return Some(Neuron::Internal(Rc::new(InternalNeuron::new(inputs))));
+        return Some(Neuron::Internal(Arc::new(InternalNeuron::new(inputs))));
     }
 }
 
