@@ -18,6 +18,14 @@ impl ActionNeuron {
 
         Self { inputs, output }
     }
+
+    pub fn inputs(&self) -> &Vec<Connection> {
+        &self.inputs
+    }
+
+    pub fn output(&self) -> &ActionOutput {
+        &self.output
+    }
 }
 
 #[derive(Debug)]
