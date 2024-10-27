@@ -29,6 +29,10 @@ impl SensoryNeuron {
 
         Self { input }
     }
+
+    pub fn input(&self) -> &SensoryInput {
+        &self.input
+    }
 }
 
 #[derive(Debug)]
