@@ -3,6 +3,7 @@
 mod connection;
 mod neuron;
 
+use bevy::prelude::Component;
 use std::sync::Arc;
 
 use super::genome::{Gene, Genome};
@@ -15,6 +16,7 @@ pub use neuron::{ActionNeuron, InternalNeuron, Neuron, SensoryNeuron};
 /// The brain is a neural network, where the sensory neurons are the inputs to the network, and the action neurons
 /// are the outputs, directly modifying the behaviour of the creature.
 
+#[derive(Component)]
 pub struct Brain {
     neurons: Vec<Neuron>,
 }
@@ -24,6 +26,7 @@ impl Brain {
     pub fn new(genome: &Genome) -> Self {
         // Build the working genome
         let mut working_genome: Vec<Option<Gene>> = genome
+            .genes()
             .iter()
             .map(|gene| {
                 // Calculating new source/destination ids is essential in order to know whether two neurons are the same.
