@@ -1,23 +1,49 @@
-use evolut::creature::{brain::Brain, genome::Gene};
+use std::thread::spawn;
+
+use bevy::prelude::*;
+use rand;
+
+use evolut::{
+    creature::{
+        brain::Brain,
+        genome::{Gene, Genome},
+    },
+    simulation::{GENERATION_ZERO_SIZE, MAX_GENES},
+};
 
 fn main() {
-    let genes = vec![
-        Gene::new(0, 0, 0.1),
-        Gene::new(0, 128, 0.2),
-        Gene::new(129, 130, 0.3),
-        Gene::new(131, 130, 0.4),
-        Gene::new(130, 1, 0.5),
-        Gene::new(1, 131, 0.6),
-        Gene::new(2, 131, 0.7),
-        Gene::new(3, 132, 0.8),
-        Gene::new(132, 131, 0.9),
-        Gene::new(130, 132, 1.0),
-        Gene::new(131, 131, 1.1),
-    ];
+    App::new()
+        .add_systems(Startup, spawn_generation_zero)
+        .add_systems(Update, print_brain_sizes)
+        .run();
 
-    let brain = Brain::new(&genes);
+    /*
+    TODO:
+    We need some way to compute each brain. I think that there needs to be one system which queries for brains. This will compute the
+    outputs of the action neurons, and update the creature's velocity and rotational velocity. When calculating the outputs of the neurons,
+    the order in which the neurons are stored in the brain is perfect: we can iterate over each neuron, and calculate its output. Maybe
+    we store outputs in another array, where the indexes match up to the indexes of the neurons array in the brain.
+     */
+}
 
-    for neuron in brain.neurons() {
-        println!("{:#?}", neuron);
+fn spawn_generation_zero(mut commands: Commands) {
+    for _ in 0..GENERATION_ZERO_SIZE {
+        let mut genes: Vec<Gene> = Vec::new();
+
+        for _ in 0..MAX_GENES {
+            let gene = Gene::new(rand::random(), rand::random(), rand::random());
+            genes.push(gene);
+        }
+
+        let genome = Genome::new(genes);
+        let brain = Brain::new(&genome);
+
+        commands.spawn((brain, genome));
+    }
+}
+
+fn print_brain_sizes(query: Query<&Brain>) {
+    for brain in &query {
+        println!("{}", brain.neurons().len());
     }
 }
