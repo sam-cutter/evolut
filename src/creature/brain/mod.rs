@@ -136,7 +136,14 @@ fn build_tree(
         working_genome[gene_index] = None;
 
         // See whether the source neuron has already been created (i.e. its tree has already been built)
-        let mut source_neuron_search = working_neurons.iter().filter(|(id, _)| *id == source_id);
+        let mut source_neuron_search = working_neurons.iter().filter(|(id, neuron)| {
+            *id == source_id
+                && if let Neuron::Action(_) = neuron {
+                    false
+                } else {
+                    true
+                }
+        });
 
         if let Some((_, source_neuron)) = source_neuron_search.next() {
             // If the source neuron has already been created, create a new connection and add it to the list of inputs
