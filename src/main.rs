@@ -1,9 +1,11 @@
+use std::{collections::HashMap, sync::Arc};
+
 use bevy::prelude::*;
 use rand;
 
 use evolut::{
     creature::{
-        brain::Brain,
+        brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron},
         genome::{Gene, Genome},
     },
     simulation::{GENERATION_ZERO_SIZE, MAX_GENES},
@@ -12,16 +14,8 @@ use evolut::{
 fn main() {
     App::new()
         .add_systems(Startup, spawn_generation_zero)
-        .add_systems(Update, print_brain_sizes)
+        .add_systems(Update, compute_output_neurons)
         .run();
-
-    /*
-    TODO:
-    We need some way to compute each brain. I think that there needs to be one system which queries for brains. This will compute the
-    outputs of the action neurons, and update the creature's velocity and rotational velocity. When calculating the outputs of the neurons,
-    the order in which the neurons are stored in the brain is perfect: we can iterate over each neuron, and calculate its output. Maybe
-    we store outputs in another array, where the indexes match up to the indexes of the neurons array in the brain.
-     */
 }
 
 fn spawn_generation_zero(mut commands: Commands) {
@@ -37,6 +31,37 @@ fn spawn_generation_zero(mut commands: Commands) {
         let brain = Brain::new(&genome);
 
         commands.spawn((brain, genome));
+    }
+}
+
+fn compute_output_neurons(query: Query<&Brain>) {
+    for brain in &query {
+        let mut internal_activation_cache: HashMap<Arc<InternalNeuron>, f64> = HashMap::new();
+
+        for action_neuron in brain
+            .neurons()
+            .iter()
+            .filter(|n| match n {
+                Neuron::Action(_) => true,
+                _ => false,
+            })
+            .map(|n| {
+                if let Neuron::Action(an) = n {
+                    an
+                } else {
+                    unreachable!()
+                }
+            })
+        {
+            let activation = action_neuron.activation(&mut internal_activation_cache);
+
+            match action_neuron.output() {
+                ActionOutput::Acceleration => println!("accelerated by {}", activation),
+                ActionOutput::AngularAcceleration => {
+                    println!("angularly accelerated by {}", activation)
+                }
+            }
+        }
     }
 }
 
