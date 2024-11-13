@@ -1,4 +1,6 @@
-use super::super::connection::Connection;
+use std::{collections::HashMap, sync::Arc};
+
+use super::{super::connection::Connection, Activation, InternalNeuron};
 
 /// The outputs of a creature's neural network.
 #[derive(Debug)]
@@ -25,6 +27,19 @@ impl ActionNeuron {
 
     pub fn output(&self) -> &ActionOutput {
         &self.output
+    }
+}
+
+impl Activation for ActionNeuron {
+    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64 {
+        return self
+            .inputs()
+            .iter()
+            .map(|connection| {
+                connection.weight() * connection.input().activation(internal_activation_cache)
+            })
+            .sum::<f64>()
+            .tanh();
     }
 }
 

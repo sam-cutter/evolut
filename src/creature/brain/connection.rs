@@ -1,6 +1,6 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
-use super::neuron::{InternalNeuron, SensoryNeuron};
+use super::neuron::{Activation, InternalNeuron, SensoryNeuron};
 
 /// Represents a dependency on another neuron.
 #[derive(Debug)]
@@ -29,4 +29,17 @@ impl Connection {
 pub enum InputNeuron {
     Sensory(Arc<SensoryNeuron>),
     Internal(Arc<InternalNeuron>),
+}
+
+impl Activation for InputNeuron {
+    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64 {
+        match self {
+            InputNeuron::Sensory(sensory_neuron) => {
+                sensory_neuron.activation(internal_activation_cache)
+            }
+            InputNeuron::Internal(internal_neuron) => {
+                internal_neuron.activation(internal_activation_cache)
+            }
+        }
+    }
 }

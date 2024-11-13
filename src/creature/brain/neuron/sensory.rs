@@ -1,3 +1,7 @@
+use std::{collections::HashMap, sync::Arc};
+
+use super::{Activation, InternalNeuron};
+
 /// The inputs to the neural network.
 #[derive(Debug)]
 pub struct SensoryNeuron {
@@ -32,6 +36,21 @@ impl SensoryNeuron {
 
     pub fn input(&self) -> &SensoryInput {
         &self.input
+    }
+}
+
+impl Activation for SensoryNeuron {
+    fn activation(
+        &self,
+        _internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>,
+    ) -> f64 {
+        match self.input() {
+            SensoryInput::Age => 0.1,
+            SensoryInput::AngularVelocity => 0.2,
+            SensoryInput::LineOfSight(_) => 0.3,
+            SensoryInput::Speed => 0.4,
+            SensoryInput::StoredEnergy => 0.5,
+        }
     }
 }
 
