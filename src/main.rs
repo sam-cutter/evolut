@@ -38,25 +38,16 @@ fn compute_output_neurons(query: Query<&Brain>) {
     for brain in &query {
         let mut internal_activation_cache: HashMap<Arc<InternalNeuron>, f64> = HashMap::new();
 
-        for action_neuron in brain
-            .neurons()
-            .iter()
-            .filter(|n| match n {
-                Neuron::Action(_) => true,
-                _ => false,
-            })
-            .map(|n| {
-                if let Neuron::Action(an) = n {
-                    an
-                } else {
-                    unreachable!()
-                }
-            })
-        {
+        for action_neuron in brain.neurons().iter().filter_map(|neuron| match neuron {
+            Neuron::Action(action_neuron) => Some(action_neuron),
+            _ => None,
+        }) {
             let activation = action_neuron.activation(&mut internal_activation_cache);
 
             match action_neuron.output() {
-                ActionOutput::Acceleration => println!("accelerated by {}", activation),
+                ActionOutput::Acceleration => {
+                    println!("accelerated by {}", activation)
+                }
                 ActionOutput::AngularAcceleration => {
                     println!("angularly accelerated by {}", activation)
                 }
@@ -65,7 +56,7 @@ fn compute_output_neurons(query: Query<&Brain>) {
     }
 }
 
-fn print_brain_sizes(query: Query<&Brain>) {
+fn _print_brain_sizes(query: Query<&Brain>) {
     for brain in &query {
         println!("{}", brain.neurons().len());
     }
