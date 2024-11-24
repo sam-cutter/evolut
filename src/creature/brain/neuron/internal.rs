@@ -20,6 +20,7 @@ impl InternalNeuron {
         Self { inputs }
     }
 
+    /// Returns a reference to its inputs.
     pub fn inputs(&self) -> &Vec<Connection> {
         &self.inputs
     }

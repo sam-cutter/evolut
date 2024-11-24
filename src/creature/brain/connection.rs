@@ -15,10 +15,12 @@ impl Connection {
         Self { input, weight }
     }
 
+    /// Returns a reference to the connection input.
     pub fn input(&self) -> &InputNeuron {
         &self.input
     }
 
+    /// Returns the weight of the connection.
     pub fn weight(&self) -> f64 {
         self.weight
     }
@@ -27,7 +29,9 @@ impl Connection {
 /// Represents the specific neuron which a connection depends upon.
 #[derive(Debug)]
 pub enum InputNeuron {
+    /// A sensory neuron.
     Sensory(Arc<SensoryNeuron>),
+    /// An internal neuron.
     Internal(Arc<InternalNeuron>),
 }
 

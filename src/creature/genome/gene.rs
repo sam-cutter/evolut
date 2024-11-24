@@ -30,7 +30,7 @@ impl Gene {
 }
 
 impl Gene {
-    /// Creates a new gene
+    /// Creates a new gene.
     pub fn new(source_id: u8, destination_id: u8, weight: f64) -> Self {
         Self {
             source_id,
@@ -39,7 +39,7 @@ impl Gene {
         }
     }
 
-    /// Creates a new gene from a given hex string
+    /// Creates a new gene from a given hex string.
     pub fn from_hex(hex: FStr<20>) -> Result<Self, ParseIntError> {
         let source_id = &hex[0..2];
         let destination_id = &hex[2..4];
@@ -52,7 +52,7 @@ impl Gene {
         Ok(Gene::new(source_id, destination_id, weight))
     }
 
-    /// Returns the hex representation of a gene
+    /// Returns the hex representation of a gene.
     pub fn as_hex(&self) -> FStr<20> {
         let hex = format!(
             "{:02x}{:02x}{:016x}",

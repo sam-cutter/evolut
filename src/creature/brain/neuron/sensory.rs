@@ -34,6 +34,7 @@ impl SensoryNeuron {
         Self { input }
     }
 
+    /// Returns a reference to its input type.
     pub fn input(&self) -> &SensoryInput {
         &self.input
     }
@@ -44,6 +45,7 @@ impl Activation for SensoryNeuron {
         &self,
         _internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>,
     ) -> f64 {
+        // TODO: compute the actual sensory input values.
         match self.input() {
             SensoryInput::Age => 0.1,
             SensoryInput::AngularVelocity => 0.2,

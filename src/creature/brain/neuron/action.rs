@@ -1,5 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
+use bevy::a11y::accesskit::Action;
+
 use super::{
     super::{connection::Connection, InputNeuron},
     Activation, InternalNeuron,
@@ -24,27 +26,16 @@ impl ActionNeuron {
         Self { inputs, output }
     }
 
+    /// Returns a reference to its inputs.
     pub fn inputs(&self) -> &Vec<Connection> {
         &self.inputs
     }
 
+    /// Returns a reference to its output type.
     pub fn output(&self) -> &ActionOutput {
         &self.output
     }
 }
-
-// impl Activation for ActionNeuron {
-//     fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64 {
-//         return self
-//             .inputs()
-//             .iter()
-//             .map(|connection| {
-//                 connection.weight() * connection.input().activation(internal_activation_cache)
-//             })
-//             .sum::<f64>()
-//             .tanh();
-//     }
-// }
 
 impl Activation for ActionNeuron {
     fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64 {
@@ -76,8 +67,11 @@ impl Activation for ActionNeuron {
     }
 }
 
+/// The output type of an action neuron.
 #[derive(Debug)]
 pub enum ActionOutput {
+    /// The acceleration to be applied to a creature's velocity.
     Acceleration,
+    /// The angular acceleration to be applied to a creature's angular velocity.
     AngularAcceleration,
 }
