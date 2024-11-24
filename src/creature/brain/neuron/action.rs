@@ -1,7 +1,5 @@
 use std::{collections::HashMap, sync::Arc};
 
-use bevy::a11y::accesskit::Action;
-
 use super::{
     super::{connection::Connection, InputNeuron},
     Activation, InternalNeuron,
