@@ -3,12 +3,14 @@ use std::{collections::HashMap, sync::Arc};
 use super::neuron::{Activation, InternalNeuron, SensoryNeuron};
 
 /// Represents a dependency on another neuron.
+// TODO: add biases as well as weights to a connection
 #[derive(Debug)]
 pub struct Connection {
     input: InputNeuron,
     weight: f64,
 }
 
+// TODO: create an activation function which implements the activation functionality
 impl Connection {
     /// Creates a new connection.
     pub fn new(input: InputNeuron, weight: f64) -> Self {

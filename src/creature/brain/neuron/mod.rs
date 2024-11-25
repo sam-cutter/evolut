@@ -20,6 +20,7 @@ pub enum Neuron {
 }
 
 /// Contains functionality to retrieve the activation of neurons.
+// TODO: make implementation of Activation the same for ActionNeuron and InternalNeuron
 pub trait Activation {
     /// Computes the activation of a neuron, given a cache of internal neuron activations.
     fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64;

@@ -36,6 +36,7 @@ impl ActionNeuron {
 }
 
 impl Activation for ActionNeuron {
+    // TODO: make implementation of Activation the same for ActionNeuron and InternalNeuron
     fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64 {
         let activation = self
             .inputs()
