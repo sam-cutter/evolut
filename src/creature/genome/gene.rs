@@ -30,6 +30,8 @@ impl Gene {
 }
 
 impl Gene {
+    // TODO: use a normal &str instead of a FStr
+
     /// Creates a new gene.
     pub fn new(source_id: u8, destination_id: u8, weight: f64) -> Self {
         Self {

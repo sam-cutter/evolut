@@ -59,6 +59,8 @@ impl Brain {
         let mut gene_index = 0;
 
         while gene_index < working_genome.len() {
+            // TODO: update this logic to use a while let pattern, then the unwrappings can be removed.
+
             if working_genome[gene_index]
                 .as_ref()
                 .is_some_and(|g| g.destination_id() < 128)
@@ -82,6 +84,7 @@ impl Brain {
                 if let Some(neuron) = action_neuron {
                     match neuron {
                         Neuron::Action(_) => working_neurons.push((neuron_id, neuron)),
+                        // TODO: update this to use a nested if let statement
                         _ => unreachable!(),
                     }
                 }
@@ -116,6 +119,8 @@ fn build_tree(
     let mut gene_index = 0;
 
     while gene_index < working_genome.len() {
+        // TODO: update this logic to use a while let pattern, then the unwrappings can be removed.
+
         // Ignore any genes whose destination ids aren't the current neuron id
         if !working_genome[gene_index]
             .as_ref()
@@ -202,6 +207,7 @@ fn build_tree(
 
                         inputs.push(input);
                     }
+                    // TODO: change this to use if let somehow
                     _ => unreachable!(),
                 }
             }
