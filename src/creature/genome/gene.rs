@@ -1,6 +1,6 @@
-use fstr::FStr;
+use anyhow::Result;
 use rand::Rng;
-use std::{num::ParseIntError, str::FromStr};
+use std::{error::Error, fmt::Display};
 
 /// Represents one neural connection in a creature's brain.
 pub struct Gene {
@@ -29,6 +29,7 @@ impl Gene {
         self.weight
     }
 
+    /// Returns a gene with a random source id, destination id and weight.
     pub fn random() -> Self {
         let mut generator = rand::thread_rng();
 
@@ -38,8 +39,6 @@ impl Gene {
             generator.gen_range(-1.0..=1.0),
         )
     }
-
-    // TODO: use a normal &str instead of a FStr
 
     /// Creates a new gene.
     pub fn new(source_id: u8, destination_id: u8, weight: f64) -> Self {
@@ -51,7 +50,11 @@ impl Gene {
     }
 
     /// Creates a new gene from a given hex string.
-    pub fn from_hex(hex: FStr<20>) -> Result<Self, ParseIntError> {
+    pub fn from_hex(hex: &str) -> Result<Self> {
+        if hex.len() != 20 {
+            return Err(InvalidHexLength.into());
+        }
+
         let source_id = &hex[0..2];
         let destination_id = &hex[2..4];
         let weight = &hex[4..20];
@@ -64,14 +67,24 @@ impl Gene {
     }
 
     /// Returns the hex representation of a gene.
-    pub fn as_hex(&self) -> FStr<20> {
-        let hex = format!(
+    pub fn as_hex(&self) -> String {
+        format!(
             "{:02x}{:02x}{:016x}",
-            self.source_id,
-            self.destination_id,
-            self.weight.to_bits(),
-        );
-
-        FStr::from_str(&hex).unwrap()
+            self.source_id(),
+            self.destination_id(),
+            self.weight().to_bits(),
+        )
     }
 }
+
+/// An error returned when a hex string to be converted into a Gene is of invalid length .
+#[derive(Debug)]
+struct InvalidHexLength;
+
+impl Display for InvalidHexLength {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "The length of the provided hex string was not 20.")
+    }
+}
+
+impl Error for InvalidHexLength {}

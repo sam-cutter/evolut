@@ -173,6 +173,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.95"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
+
+[[package]]
 name = "approx"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1705,8 +1711,8 @@ dependencies = [
 name = "evolut"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bevy",
- "fstr",
  "rand",
 ]
 
@@ -1779,12 +1785,6 @@ name = "foreign-types-shared"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aa9a19cbb55df58761df49b23516a86d432839add4af60fc256da840f66ed35b"
-
-[[package]]
-name = "fstr"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6560d66181af047310870cbc90cebdd597bb66f7c73e0d5a9e56afae5b6c56c7"
 
 [[package]]
 name = "futures-core"
