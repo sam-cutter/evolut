@@ -1,4 +1,5 @@
 use fstr::FStr;
+use rand::Rng;
 use std::{num::ParseIntError, str::FromStr};
 
 /// Represents one neural connection in a creature's brain.
@@ -27,9 +28,17 @@ impl Gene {
     pub fn weight(&self) -> f64 {
         self.weight
     }
-}
 
-impl Gene {
+    pub fn random() -> Self {
+        let mut generator = rand::thread_rng();
+
+        Gene::new(
+            rand::random(),
+            rand::random(),
+            generator.gen_range(-1.0..=1.0),
+        )
+    }
+
     // TODO: use a normal &str instead of a FStr
 
     /// Creates a new gene.

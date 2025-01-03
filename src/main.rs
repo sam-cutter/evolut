@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
 use bevy::prelude::*;
-use rand;
 
 use evolut::{
     creature::{
@@ -23,8 +22,7 @@ fn spawn_generation_zero(mut commands: Commands) {
         let mut genes: Vec<Gene> = Vec::new();
 
         for _ in 0..MAX_GENES {
-            // TODO: ensure negative weights can occur
-            let gene = Gene::new(rand::random(), rand::random(), rand::random());
+            let gene = Gene::random();
             genes.push(gene);
         }
 
