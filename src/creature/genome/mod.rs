@@ -22,4 +22,15 @@ impl Genome {
     pub fn genes(&self) -> &Vec<Gene> {
         &self.genes
     }
+
+    pub fn random(length: usize) -> Self {
+        let mut genes: Vec<Gene> = Vec::new();
+
+        for _ in 0..length {
+            let gene = Gene::random();
+            genes.push(gene);
+        }
+
+        Genome::new(genes)
+    }
 }

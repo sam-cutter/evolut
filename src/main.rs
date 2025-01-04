@@ -5,9 +5,9 @@ use bevy::prelude::*;
 use evolut::{
     creature::{
         brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron},
-        genome::{Gene, Genome},
+        genome::Genome,
     },
-    simulation::{GENERATION_ZERO_SIZE, MAX_GENES},
+    simulation::{GENERATION_ZERO_SIZE, GENOME_LENGTH},
 };
 
 fn main() {
@@ -19,14 +19,7 @@ fn main() {
 
 fn spawn_generation_zero(mut commands: Commands) {
     for _ in 0..GENERATION_ZERO_SIZE {
-        let mut genes: Vec<Gene> = Vec::new();
-
-        for _ in 0..MAX_GENES {
-            let gene = Gene::random();
-            genes.push(gene);
-        }
-
-        let genome = Genome::new(genes);
+        let genome = Genome::random(GENOME_LENGTH);
         let brain = Brain::new(&genome);
 
         commands.spawn((brain, genome));
