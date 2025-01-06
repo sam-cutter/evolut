@@ -12,8 +12,16 @@ use evolut::{
 
 fn main() {
     App::new()
+        .add_plugins(DefaultPlugins)
         .add_systems(Startup, spawn_generation_zero)
-        .add_systems(Update, execute_creature_decisions)
+        .add_systems(
+            Update,
+            (
+                execute_creature_decisions,
+                update_translations,
+                update_rotations,
+            ),
+        )
         .run();
 }
 
@@ -63,6 +71,20 @@ fn execute_creature_decisions(
                 }
             }
         }
+    }
+}
+
+fn update_translations(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+    for (mut transform, velocity) in &mut query {
+        println!("updated translation");
+        transform.translation += velocity.value.extend(0.0) * time.delta_seconds();
+    }
+}
+
+fn update_rotations(mut query: Query<(&mut Transform, &AngularVelocity)>, time: Res<Time>) {
+    for (mut transform, angular_velocity) in &mut query {
+        println!("updated rotation");
+        transform.rotate_z(angular_velocity.value * time.delta_seconds());
     }
 }
 
