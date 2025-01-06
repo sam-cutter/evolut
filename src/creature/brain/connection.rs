@@ -7,13 +7,13 @@ use super::neuron::{Activation, InternalNeuron, SensoryNeuron};
 #[derive(Debug)]
 pub struct Connection {
     input: InputNeuron,
-    weight: f64,
+    weight: f32,
 }
 
 // TODO: create an activation function which implements the activation functionality
 impl Connection {
     /// Creates a new connection.
-    pub fn new(input: InputNeuron, weight: f64) -> Self {
+    pub fn new(input: InputNeuron, weight: f32) -> Self {
         Self { input, weight }
     }
 
@@ -23,7 +23,7 @@ impl Connection {
     }
 
     /// Returns the weight of the connection.
-    pub fn weight(&self) -> f64 {
+    pub fn weight(&self) -> f32 {
         self.weight
     }
 }
@@ -38,7 +38,7 @@ pub enum InputNeuron {
 }
 
 impl Activation for InputNeuron {
-    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64 {
+    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>) -> f32 {
         match self {
             InputNeuron::Sensory(sensory_neuron) => {
                 sensory_neuron.activation(internal_activation_cache)

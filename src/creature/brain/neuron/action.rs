@@ -37,7 +37,7 @@ impl ActionNeuron {
 
 impl Activation for ActionNeuron {
     // TODO: make implementation of Activation the same for ActionNeuron and InternalNeuron
-    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>) -> f64 {
+    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>) -> f32 {
         let activation = self
             .inputs()
             .iter()
@@ -59,7 +59,7 @@ impl Activation for ActionNeuron {
                     connection.weight() * sensory_neuron.activation(internal_activation_cache)
                 }
             })
-            .sum::<f64>()
+            .sum::<f32>()
             .tanh();
 
         return activation;

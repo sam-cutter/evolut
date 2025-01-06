@@ -43,8 +43,8 @@ impl SensoryNeuron {
 impl Activation for SensoryNeuron {
     fn activation(
         &self,
-        _internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f64>,
-    ) -> f64 {
+        _internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>,
+    ) -> f32 {
         // TODO: compute the actual sensory input values.
         match self.input() {
             SensoryInput::Age => 0.1,

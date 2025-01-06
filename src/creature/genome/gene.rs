@@ -10,7 +10,7 @@ pub struct Gene {
     /// If the most significant bit of the destination id is a 0 (i.e. less than 128), the destination is an action neuron..
     destination_id: u8,
     /// The weight of the connection.
-    weight: f64,
+    weight: f32,
 }
 
 impl Gene {
@@ -25,7 +25,7 @@ impl Gene {
     }
 
     /// Returns the weight.
-    pub fn weight(&self) -> f64 {
+    pub fn weight(&self) -> f32 {
         self.weight
     }
 
@@ -41,7 +41,7 @@ impl Gene {
     }
 
     /// Creates a new gene.
-    pub fn new(source_id: u8, destination_id: u8, weight: f64) -> Self {
+    pub fn new(source_id: u8, destination_id: u8, weight: f32) -> Self {
         Self {
             source_id,
             destination_id,
@@ -51,17 +51,17 @@ impl Gene {
 
     /// Creates a new gene from a given hex string.
     pub fn from_hex(hex: &str) -> Result<Self> {
-        if hex.len() != 20 {
+        if hex.len() != 12 {
             return Err(InvalidHexLength.into());
         }
 
         let source_id = &hex[0..2];
         let destination_id = &hex[2..4];
-        let weight = &hex[4..20];
+        let weight = &hex[4..12];
 
         let source_id = u8::from_str_radix(source_id, 16)?;
         let destination_id = u8::from_str_radix(destination_id, 16)?;
-        let weight = f64::from_bits(u64::from_str_radix(weight, 16)?);
+        let weight = f32::from_bits(u32::from_str_radix(weight, 16)?);
 
         Ok(Gene::new(source_id, destination_id, weight))
     }
@@ -69,7 +69,7 @@ impl Gene {
     /// Returns the hex representation of a gene.
     pub fn as_hex(&self) -> String {
         format!(
-            "{:02x}{:02x}{:016x}",
+            "{:02x}{:02x}{:012x}",
             self.source_id(),
             self.destination_id(),
             self.weight().to_bits(),
@@ -83,7 +83,7 @@ struct InvalidHexLength;
 
 impl Display for InvalidHexLength {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "The length of the provided hex string was not 20.")
+        write!(f, "The length of the provided hex string was not 12.")
     }
 }
 
