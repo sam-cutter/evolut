@@ -4,9 +4,10 @@ use std::{
     sync::Arc,
 };
 
-use crate::creature::brain::InputNeuron;
-
-use super::{super::connection::Connection, Activation};
+use super::{
+    super::connection::{Connection, InputNeuron},
+    Activation,
+};
 
 /// Neurons which exist to facilitate more complexity in the neural network.
 #[derive(Debug)]

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use std::{collections::HashMap, sync::Arc};
 
 use super::{AngularVelocity, Velocity, GENERATION_ZERO_SIZE, GENOME_LENGTH};
-use crate::creature::{
+use crate::model::creature::{
     brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron},
     genome::Genome,
 };
