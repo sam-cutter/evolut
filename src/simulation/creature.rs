@@ -9,7 +9,9 @@ use crate::model::creature::{
 
 #[derive(Bundle)]
 pub struct CreatureBundle {
-    pub spatial: SpatialBundle,
+    pub sprite: Sprite,
+    pub transform: Transform,
+    pub visibility: Visibility,
     pub velocity: Velocity,
     pub angular_velocity: AngularVelocity,
     pub brain: Brain,
@@ -22,17 +24,33 @@ impl Plugin for CreaturePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_generation_zero);
 
-        app.add_systems(Update, (update_translations, update_rotations));
+        app.add_systems(
+            Update,
+            (
+                update_translations,
+                update_rotations,
+                execute_creature_decisions,
+            ),
+        );
     }
 }
 
-fn spawn_generation_zero(mut commands: Commands) {
+fn spawn_generation_zero(mut commands: Commands, asset_server: Res<AssetServer>) {
     for _ in 0..GENERATION_ZERO_SIZE {
         let genome = Genome::random(GENOME_LENGTH);
         let brain = Brain::new(&genome);
 
         commands.spawn(CreatureBundle {
-            spatial: SpatialBundle::default(),
+            sprite: Sprite::from_image(asset_server.load("creature.png")),
+            transform: Transform {
+                scale: Vec3 {
+                    x: 0.05,
+                    y: 0.05,
+                    z: 1.0,
+                },
+                ..default()
+            },
+            visibility: Visibility::Visible,
             velocity: Velocity {
                 value: Vec2::default(),
             },
@@ -74,12 +92,12 @@ fn execute_creature_decisions(
 
 fn update_translations(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut transform, velocity) in &mut query {
-        transform.translation += velocity.value.extend(0.0) * time.delta_seconds();
+        transform.translation += velocity.value.extend(0.0) * time.delta_secs();
     }
 }
 
 fn update_rotations(mut query: Query<(&mut Transform, &AngularVelocity)>, time: Res<Time>) {
     for (mut transform, angular_velocity) in &mut query {
-        transform.rotate_z(angular_velocity.value * time.delta_seconds());
+        transform.rotate_z(angular_velocity.value * time.delta_secs());
     }
 }
