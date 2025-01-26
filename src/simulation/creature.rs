@@ -1,7 +1,9 @@
-use bevy::prelude::*;
-use std::{collections::HashMap, sync::Arc};
+use bevy::{prelude::*, time::common_conditions::on_timer};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use super::{AngularVelocity, Velocity, GENERATION_ZERO_SIZE, GENOME_LENGTH};
+use super::{
+    AngularVelocity, Velocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE, GENOME_LENGTH,
+};
 use crate::model::creature::{
     brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron},
     genome::Genome,
@@ -24,13 +26,13 @@ impl Plugin for CreaturePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_generation_zero);
 
+        app.add_systems(FixedUpdate, (update_translations, update_rotations));
+
         app.add_systems(
             Update,
-            (
-                update_translations,
-                update_rotations,
-                execute_creature_decisions,
-            ),
+            execute_creature_decisions.run_if(on_timer(Duration::from_secs_f64(
+                1. / BRAIN_UPDATE_FREQUENCY,
+            ))),
         );
     }
 }
@@ -90,13 +92,13 @@ fn execute_creature_decisions(
     }
 }
 
-fn update_translations(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+fn update_translations(mut query: Query<(&mut Transform, &Velocity)>, time: Res<Time<Fixed>>) {
     for (mut transform, velocity) in &mut query {
         transform.translation += velocity.value.extend(0.0) * time.delta_secs();
     }
 }
 
-fn update_rotations(mut query: Query<(&mut Transform, &AngularVelocity)>, time: Res<Time>) {
+fn update_rotations(mut query: Query<(&mut Transform, &AngularVelocity)>, time: Res<Time<Fixed>>) {
     for (mut transform, angular_velocity) in &mut query {
         transform.rotate_z(angular_velocity.value * time.delta_secs());
     }
