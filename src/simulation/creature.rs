@@ -2,7 +2,8 @@ use bevy::{prelude::*, time::common_conditions::on_timer};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use super::{
-    AngularVelocity, Velocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE, GENOME_LENGTH,
+    AngularVelocity, Energy, Velocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE, GENOME_LENGTH,
+    INITIAL_ENERGY,
 };
 use crate::model::creature::{
     brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron},
@@ -16,6 +17,7 @@ pub struct CreatureBundle {
     pub visibility: Visibility,
     pub velocity: Velocity,
     pub angular_velocity: AngularVelocity,
+    pub energy: Energy,
     pub brain: Brain,
     pub genome: Genome,
 }
@@ -26,7 +28,15 @@ impl Plugin for CreaturePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_generation_zero);
 
-        app.add_systems(FixedUpdate, (update_translations, update_rotations));
+        app.add_systems(
+            FixedUpdate,
+            (
+                update_translations,
+                update_rotations,
+                deduct_energy,
+                kill_creatures,
+            ),
+        );
 
         app.add_systems(
             Update,
@@ -57,6 +67,9 @@ fn spawn_generation_zero(mut commands: Commands, asset_server: Res<AssetServer>)
                 value: Vec2::default(),
             },
             angular_velocity: AngularVelocity { value: 0.0 },
+            energy: Energy {
+                value: INITIAL_ENERGY,
+            },
             brain,
             genome,
         });
@@ -101,5 +114,24 @@ fn update_translations(mut query: Query<(&mut Transform, &Velocity)>, time: Res<
 fn update_rotations(mut query: Query<(&mut Transform, &AngularVelocity)>, time: Res<Time<Fixed>>) {
     for (mut transform, angular_velocity) in &mut query {
         transform.rotate_z(angular_velocity.value * time.delta_secs());
+    }
+}
+
+fn deduct_energy(
+    mut query: Query<(&mut Energy, &Velocity, &AngularVelocity)>,
+    time: Res<Time<Fixed>>,
+) {
+    for (mut energy, velocity, angular_velocity) in &mut query {
+        // TODO: export constants for multipliers of the different terms in this function, fine tune.
+        energy.value -=
+            (10. + velocity.value.length() + angular_velocity.value.abs()) * time.delta_secs();
+    }
+}
+
+fn kill_creatures(query: Query<(&Energy, Entity)>, mut commands: Commands) {
+    for (energy, entity) in &query {
+        if energy.value < 0. {
+            commands.entity(entity).despawn();
+        }
     }
 }

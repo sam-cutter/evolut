@@ -73,4 +73,5 @@ pub enum ActionOutput {
     Acceleration,
     /// The angular acceleration to be applied to a creature's angular velocity.
     AngularAcceleration,
+    // TODO: Add a neuron for reproduction.
 }
