@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use super::{
     super::{connection::Connection, InputNeuron},
-    Activation, InternalNeuron,
+    Activation, InternalNeuron, SensoryInputs,
 };
 
 /// The outputs of a creature's neural network.
@@ -37,7 +37,11 @@ impl ActionNeuron {
 
 impl Activation for ActionNeuron {
     // TODO: make implementation of Activation the same for ActionNeuron and InternalNeuron
-    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>) -> f32 {
+    fn activation(
+        &self,
+        internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>,
+        sensory_inputs: &SensoryInputs,
+    ) -> f32 {
         let activation = self
             .inputs()
             .iter()
@@ -48,7 +52,8 @@ impl Activation for ActionNeuron {
                     if let Some(activation) = cached_activation {
                         connection.weight() * activation
                     } else {
-                        let activation = internal_neuron.activation(internal_activation_cache);
+                        let activation =
+                            internal_neuron.activation(internal_activation_cache, sensory_inputs);
 
                         internal_activation_cache.insert(Arc::clone(internal_neuron), activation);
 
@@ -56,7 +61,8 @@ impl Activation for ActionNeuron {
                     }
                 }
                 InputNeuron::Sensory(sensory_neuron) => {
-                    connection.weight() * sensory_neuron.activation(internal_activation_cache)
+                    connection.weight()
+                        * sensory_neuron.activation(internal_activation_cache, sensory_inputs)
                 }
             })
             .sum::<f32>()

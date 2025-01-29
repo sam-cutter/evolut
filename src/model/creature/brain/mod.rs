@@ -10,7 +10,9 @@ use super::genome::{Gene, Genome};
 use crate::simulation::MAX_INTERNAL_NEURONS;
 pub use connection::{Connection, InputNeuron};
 pub use neuron::Activation;
-pub use neuron::{ActionNeuron, ActionOutput, InternalNeuron, Neuron, SensoryNeuron};
+pub use neuron::{
+    ActionNeuron, ActionOutput, InternalNeuron, LinesOfSight, Neuron, SensoryInputs, SensoryNeuron,
+};
 
 /// A collection of neurons.
 ///

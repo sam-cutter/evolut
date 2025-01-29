@@ -35,3 +35,8 @@ pub struct AngularVelocity {
 pub struct Energy {
     pub value: f32,
 }
+
+#[derive(Component)]
+pub struct Age {
+    pub value: f32,
+}

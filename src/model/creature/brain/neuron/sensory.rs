@@ -44,14 +44,15 @@ impl Activation for SensoryNeuron {
     fn activation(
         &self,
         _internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>,
+        sensory_inputs: &SensoryInputs,
     ) -> f32 {
         // TODO: compute the actual sensory input values.
         match self.input() {
-            SensoryInput::Age => 0.1,
-            SensoryInput::AngularVelocity => 0.2,
-            SensoryInput::LineOfSight(_) => 0.3,
-            SensoryInput::Speed => 0.4,
-            SensoryInput::StoredEnergy => 0.5,
+            SensoryInput::Age => sensory_inputs.age,
+            SensoryInput::AngularVelocity => sensory_inputs.angular_velocity,
+            SensoryInput::LineOfSight(_) => 0.1,
+            SensoryInput::Speed => sensory_inputs.speed,
+            SensoryInput::StoredEnergy => sensory_inputs.stored_energy,
         }
     }
 }
@@ -76,4 +77,25 @@ pub enum LineOfSight {
     RightCreature,
     RightFood,
     RightObstacle,
+}
+
+pub struct SensoryInputs {
+    pub age: f32,
+    pub speed: f32,
+    pub angular_velocity: f32,
+    pub lines_of_sight: LinesOfSight,
+    pub stored_energy: f32,
+}
+
+#[derive(Default)]
+pub struct LinesOfSight {
+    pub left_creature: f32,
+    pub left_food: f32,
+    pub left_obstacle: f32,
+    pub middle_creature: f32,
+    pub middle_food: f32,
+    pub middle_obstacle: f32,
+    pub right_creature: f32,
+    pub right_food: f32,
+    pub right_obstacle: f32,
 }

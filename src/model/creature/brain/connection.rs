@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use super::neuron::{Activation, InternalNeuron, SensoryNeuron};
+use super::neuron::{Activation, InternalNeuron, SensoryInputs, SensoryNeuron};
 
 /// Represents a dependency on another neuron.
 // TODO: add biases as well as weights to a connection
@@ -38,13 +38,17 @@ pub enum InputNeuron {
 }
 
 impl Activation for InputNeuron {
-    fn activation(&self, internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>) -> f32 {
+    fn activation(
+        &self,
+        internal_activation_cache: &mut HashMap<Arc<InternalNeuron>, f32>,
+        sensory_inputs: &SensoryInputs,
+    ) -> f32 {
         match self {
             InputNeuron::Sensory(sensory_neuron) => {
-                sensory_neuron.activation(internal_activation_cache)
+                sensory_neuron.activation(internal_activation_cache, sensory_inputs)
             }
             InputNeuron::Internal(internal_neuron) => {
-                internal_neuron.activation(internal_activation_cache)
+                internal_neuron.activation(internal_activation_cache, sensory_inputs)
             }
         }
     }

@@ -2,11 +2,11 @@ use bevy::{prelude::*, time::common_conditions::on_timer};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use super::{
-    AngularVelocity, Energy, Velocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE, GENOME_LENGTH,
-    INITIAL_ENERGY,
+    Age, AngularVelocity, Energy, Velocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE,
+    GENOME_LENGTH, INITIAL_ENERGY,
 };
 use crate::model::creature::{
-    brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron},
+    brain::{ActionOutput, Activation, Brain, InternalNeuron, LinesOfSight, Neuron, SensoryInputs},
     genome::Genome,
 };
 
@@ -20,6 +20,7 @@ pub struct CreatureBundle {
     pub energy: Energy,
     pub brain: Brain,
     pub genome: Genome,
+    pub age: Age,
 }
 
 pub struct CreaturePlugin;
@@ -31,11 +32,13 @@ impl Plugin for CreaturePlugin {
         app.add_systems(
             FixedUpdate,
             (
+                update_ages,
                 update_translations,
                 update_rotations,
                 deduct_energy,
                 kill_creatures,
-            ),
+            )
+                .chain(),
         );
 
         app.add_systems(
@@ -60,6 +63,7 @@ fn spawn_generation_zero(mut commands: Commands, asset_server: Res<AssetServer>)
                     y: 0.05,
                     z: 1.0,
                 },
+                translation: Vec3::default(),
                 ..default()
             },
             visibility: Visibility::Visible,
@@ -72,21 +76,41 @@ fn spawn_generation_zero(mut commands: Commands, asset_server: Res<AssetServer>)
             },
             brain,
             genome,
+            age: Age { value: 0. },
         });
     }
 }
 
 fn execute_creature_decisions(
-    mut query: Query<(&Brain, &Transform, &mut Velocity, &mut AngularVelocity)>,
+    mut query: Query<(
+        &Brain,
+        &Transform,
+        &mut Velocity,
+        &mut AngularVelocity,
+        &Energy,
+        &Age,
+    )>,
 ) {
-    for (brain, transform, mut velocity, mut angular_velocity) in &mut query {
+    for (brain, transform, mut velocity, mut angular_velocity, energy, age) in &mut query {
         let mut internal_activation_cache: HashMap<Arc<InternalNeuron>, f32> = HashMap::new();
+
+        // TODO: compute lines of sight
+        let lines_of_sight = LinesOfSight { ..default() };
+
+        let sensory_inputs = SensoryInputs {
+            age: age.value,
+            speed: velocity.value.length(),
+            angular_velocity: angular_velocity.value,
+            lines_of_sight,
+            stored_energy: energy.value,
+        };
 
         for action_neuron in brain.neurons().iter().filter_map(|neuron| match neuron {
             Neuron::Action(action_neuron) => Some(action_neuron),
             _ => None,
         }) {
-            let activation = action_neuron.activation(&mut internal_activation_cache);
+            let activation =
+                action_neuron.activation(&mut internal_activation_cache, &sensory_inputs);
 
             match action_neuron.output() {
                 ActionOutput::Acceleration => {
@@ -114,6 +138,12 @@ fn update_translations(mut query: Query<(&mut Transform, &Velocity)>, time: Res<
 fn update_rotations(mut query: Query<(&mut Transform, &AngularVelocity)>, time: Res<Time<Fixed>>) {
     for (mut transform, angular_velocity) in &mut query {
         transform.rotate_z(angular_velocity.value * time.delta_secs());
+    }
+}
+
+fn update_ages(mut query: Query<&mut Age>, time: Res<Time<Fixed>>) {
+    for mut age in &mut query {
+        age.value += time.delta_secs();
     }
 }
 
