@@ -61,7 +61,7 @@ impl Brain {
         let mut gene_index = 0;
 
         while gene_index < working_genome.len() {
-            // TODO: update this logic to use a while let pattern, then the unwrappings can be removed.
+            // TODO: update this logic to use a while let pattern, then the un-wrappings can be removed.
 
             if working_genome[gene_index]
                 .as_ref()
@@ -109,6 +109,47 @@ impl Brain {
     }
 }
 
+/* Dear my very confused future self.
+
+This function doesn't seem like it should work, but it does.
+
+The first place where you're likely to be confused is the visited_neurons.contains(&source_id) condition. This seems to be in the wrong place.
+It is not. It seems like we should be checking this in the branch of the control flow which runs if the source_neuron_search yielded something.
+However, it would be useless here: assuming that the neuron we found was built correctly, it cannot possibly be part of any cycles;
+in the neuron's creation, any cycles would have been detected and genes appropriately discarded.
+
+The next thing that may confuse you is the fact that the function still seems to work fine, even if the visited_neurons.contains(&source_id)
+condition is removed. Here's why. While it's impossible for the same gene to be built multiple times, it is possible for the same neuron
+to be built more than once. This can happen when a cycle occurs (but we don't want that to happen!).
+Let's assume that we are currently building internal neuron A. The first of the genes relating to internal neuron A actually forms
+a self-referencing connection. Seeing as internal neuron A has not yet been built (a neuron is not added to the working_neurons list
+until all of the trees of its inputs have been built), we will move to the following branch when evaluating the gene which connects A to itself.
+    else if source_neuron_search.next().is_none() && source_is_internal_neuron
+Let's now imagine that the visited_neurons.contains(&source_id) condition was removed. We would call upon the build_tree function again,
+and we would once again be at internal neuron A (I will call this A' from now on). All of the genes relating to internal neuron A
+would instead be built for A', and there would now be two of internal neuron A. You can see how, in reality, no cycles or loops
+will ever be built (***the key thing to remember is that a neuron is not built until all of its input trees are built, therefore it is impossible
+for a neuron to ever actually reference itself***), neurons will just be pulled apart into multiple copies.
+
+This logic extends to if there are longer cycles.
+
+Intended structure:
+= A
+-> A (IGNORE)
+-> B
+-> C
+
+Structure which occurs when the condition is removed:
+= A
+-> A'
+    -> B
+    -> C
+
+Please believe me, and don't try to understand this ever again.
+
+Sam, quarter past 11 on a Saturday night :)
+*/
+
 fn build_tree(
     neuron_id: u8, // The id of the neuron whose tree is to be built
     working_genome: &mut Vec<Option<Gene>>, // The list of genes which have not already been used/discarded
@@ -121,7 +162,7 @@ fn build_tree(
     let mut gene_index = 0;
 
     while gene_index < working_genome.len() {
-        // TODO: update this logic to use a while let pattern, then the unwrappings can be removed.
+        // TODO: update this logic to use a while let pattern, then the un-wrappings can be removed.
 
         // Ignore any genes whose destination ids aren't the current neuron id
         if !working_genome[gene_index]
