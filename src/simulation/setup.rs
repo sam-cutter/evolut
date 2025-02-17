@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera::ScalingMode};
 
 use crate::simulation::FIXED_UPDATE_FREQUENCY;
 
@@ -15,5 +15,12 @@ impl Plugin for SetupPlugin {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2d);
+    commands.spawn((
+        Camera2d,
+        OrthographicProjection {
+            scaling_mode: ScalingMode::WindowSize,
+            scale: 0.05,
+            ..OrthographicProjection::default_2d()
+        },
+    ));
 }
