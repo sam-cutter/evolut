@@ -19,7 +19,7 @@ fn setup(mut commands: Commands) {
         Camera2d,
         OrthographicProjection {
             scaling_mode: ScalingMode::WindowSize,
-            scale: 0.05,
+            scale: 0.1,
             ..OrthographicProjection::default_2d()
         },
     ));
