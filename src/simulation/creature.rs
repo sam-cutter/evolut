@@ -9,7 +9,7 @@ use std::{
 
 use super::{
     Age, AngularVelocity, Energy, Velocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE,
-    GENOME_LENGTH, INITIAL_ENERGY,
+    GENOME_LENGTH, INITIAL_ENERGY, SEEING_DISTANCE,
 };
 use crate::model::creature::{
     brain::{ActionOutput, Activation, Brain, InternalNeuron, LinesOfSight, Neuron, SensoryInputs},
@@ -18,6 +18,7 @@ use crate::model::creature::{
 
 #[derive(Bundle)]
 pub struct CreatureBundle {
+    pub creature: Creature,
     pub mesh: Mesh2d,
     pub mesh_material: MeshMaterial2d<ColorMaterial>,
     pub transform: Transform,
@@ -29,6 +30,9 @@ pub struct CreatureBundle {
     pub genome: Genome,
     pub age: Age,
 }
+
+#[derive(Component)]
+pub struct Creature;
 
 pub struct CreaturePlugin;
 
@@ -71,6 +75,7 @@ fn spawn_generation_zero(
         let brain = Brain::new(&genome);
 
         commands.spawn(CreatureBundle {
+            creature: Creature,
             mesh: Mesh2d(circle),
             mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(0., 1., 0.))),
             transform: Transform {
@@ -105,17 +110,14 @@ fn execute_creature_decisions(
         &Energy,
         &Age,
     )>,
+    transform_query: Query<&Transform, With<Creature>>,
 ) {
-    // MUST DO: build the query for the transforms
-    // let spatial_index = build_spatial_index(todo!());
+    let spatial_index = build_spatial_index(transform_query);
 
     for (brain, transform, mut velocity, mut angular_velocity, energy, age) in &mut query {
         let mut internal_activation_cache: HashMap<Arc<InternalNeuron>, f32> = HashMap::new();
 
-        // MUST DO: compute lines of sight
-        // let lines_of_sight = compute_vision(transform, &spatial_index);
-
-        let lines_of_sight = LinesOfSight { ..default() };
+        let lines_of_sight = compute_vision(transform, &spatial_index);
 
         let sensory_inputs = SensoryInputs {
             age: age.value,
@@ -211,14 +213,14 @@ pub fn compute_vision(
     // This forms a 3 by 3 grid, centred at the current cell.
     let cells_to_search: Vec<(i32, i32)> = vec![
         (cell_x, cell_y),
-        (cell_x - 5, cell_y),
-        (cell_x + 5, cell_y),
-        (cell_x, cell_y - 5),
-        (cell_x, cell_y + 5),
-        (cell_x - 5, cell_y - 5),
-        (cell_x + 5, cell_y - 5),
-        (cell_x - 5, cell_y + 5),
-        (cell_x + 5, cell_y + 5),
+        (cell_x - SEEING_DISTANCE * 2, cell_y),
+        (cell_x + SEEING_DISTANCE * 2, cell_y),
+        (cell_x, cell_y - SEEING_DISTANCE * 2),
+        (cell_x, cell_y + SEEING_DISTANCE * 2),
+        (cell_x - SEEING_DISTANCE * 2, cell_y - SEEING_DISTANCE * 2),
+        (cell_x + SEEING_DISTANCE * 2, cell_y - SEEING_DISTANCE * 2),
+        (cell_x - SEEING_DISTANCE * 2, cell_y + SEEING_DISTANCE * 2),
+        (cell_x + SEEING_DISTANCE * 2, cell_y + SEEING_DISTANCE * 2),
     ];
 
     for cell in cells_to_search {
@@ -232,11 +234,7 @@ pub fn compute_vision(
                     continue;
                 }
 
-                println!("Creature located at ({creature_x}, {creature_y})");
-
                 for eye_angle in EYE_ANGLES {
-                    println!("Eye: {} degrees", eye_angle.1.to_degrees());
-
                     let global_eye_angle =
                         eye_angle.1 + transform.rotation.to_euler(EulerRot::XYZ).2;
 
@@ -308,8 +306,6 @@ pub fn compute_vision(
                         let intersection_x = intersection.0;
                         let intersection_y = intersection.1;
 
-                        print!("Intersection at ({intersection_x}, {intersection_y}): ");
-
                         let delta_x = intersection_x - x;
                         let delta_y = intersection_y - y;
 
@@ -318,14 +314,12 @@ pub fn compute_vision(
                             Vec2::new(global_eye_angle.cos(), global_eye_angle.sin());
 
                         if creature_vector.dot(eyeline_vector) <= 0.0 {
-                            println!("was not in the right direction.");
                             continue;
                         }
 
                         let distance = (delta_x.powi(2) + delta_y.powi(2)).sqrt();
 
-                        if distance > 5.0 {
-                            println!("was too far away.");
+                        if distance > SEEING_DISTANCE as f32 {
                             continue;
                         }
 
@@ -340,8 +334,6 @@ pub fn compute_vision(
                         if new_eye_value > *eye_value {
                             *eye_value = new_eye_value
                         }
-
-                        println!();
                     }
                 }
             }
@@ -351,7 +343,9 @@ pub fn compute_vision(
     return lines_of_sight;
 }
 
-fn build_spatial_index(query: Query<&Transform>) -> HashMap<(i32, i32), Vec<(f32, f32)>> {
+fn build_spatial_index(
+    query: Query<&Transform, With<Creature>>,
+) -> HashMap<(i32, i32), Vec<(f32, f32)>> {
     let mut spatial_index: HashMap<(i32, i32), Vec<(f32, f32)>> = HashMap::new();
 
     for transform in &query {
@@ -369,5 +363,8 @@ fn build_spatial_index(query: Query<&Transform>) -> HashMap<(i32, i32), Vec<(f32
 }
 
 pub fn get_cell_coordinates(x: f32, y: f32) -> (i32, i32) {
-    ((x - x.rem_euclid(5.)) as i32, (y - y.rem_euclid(5.)) as i32)
+    (
+        (x - x.rem_euclid((SEEING_DISTANCE * 2) as f32)) as i32,
+        (y - y.rem_euclid((SEEING_DISTANCE * 2) as f32)) as i32,
+    )
 }

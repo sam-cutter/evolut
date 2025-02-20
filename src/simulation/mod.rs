@@ -20,6 +20,8 @@ pub const FIXED_UPDATE_FREQUENCY: f64 = 1000.;
 pub const BRAIN_UPDATE_FREQUENCY: f64 = 10.;
 /// The initial energy a creature should have.
 pub const INITIAL_ENERGY: f32 = 1000.;
+/// The distance that a creature is able to see
+pub const SEEING_DISTANCE: i32 = 10;
 
 #[derive(Component)]
 pub struct Velocity {
