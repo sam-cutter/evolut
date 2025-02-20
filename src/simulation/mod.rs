@@ -1,11 +1,13 @@
 //! Contains code related to running the simulation.
 
 mod creature;
+mod food;
 mod setup;
 
 use bevy::{math::Vec2, prelude::Component};
 
 pub use creature::CreaturePlugin;
+pub use food::FoodPlugin;
 pub use setup::SetupPlugin;
 
 /// The maximum number of internal neurons a creature's brain can contain.

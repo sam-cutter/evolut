@@ -43,11 +43,11 @@ impl Plugin for CreaturePlugin {
         app.add_systems(
             FixedUpdate,
             (
+                deduct_energy,
+                kill_creatures,
                 update_ages,
                 update_translations,
                 update_rotations,
-                deduct_energy,
-                kill_creatures,
             )
                 .chain(),
         );
