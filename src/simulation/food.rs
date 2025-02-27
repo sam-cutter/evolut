@@ -3,12 +3,16 @@ use rand::Rng;
 
 use super::INITIAL_FOOD;
 
+#[derive(Component)]
+pub struct Food;
+
 #[derive(Bundle)]
 pub struct FoodBundle {
     pub mesh: Mesh2d,
     pub mesh_material: MeshMaterial2d<ColorMaterial>,
     pub transform: Transform,
     pub visibility: Visibility,
+    pub food: Food,
 }
 
 pub struct FoodPlugin;
@@ -41,6 +45,7 @@ fn place_initial_food(
                 ..default()
             },
             visibility: Visibility::Visible,
+            food: Food,
         });
     }
 }
