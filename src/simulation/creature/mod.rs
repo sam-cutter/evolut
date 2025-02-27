@@ -66,7 +66,7 @@ fn spawn_generation_zero(
 
         commands.spawn(CreatureBundle {
             mesh: Mesh2d(circle),
-            mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(0.0, 1.0, 0.0))),
+            mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(1.0, 0.0, 0.0))),
             transform: Transform {
                 translation: Vec3::new(
                     generator.gen_range(-50.0..=50.0),
