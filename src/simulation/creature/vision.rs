@@ -1,3 +1,4 @@
+use bevy::ecs::query::QueryIter;
 use bevy::prelude::*;
 use std::collections::HashMap;
 use std::f32::consts::{E, PI};
@@ -192,47 +193,49 @@ pub fn build_spatial_index(
 ) -> HashMap<(i32, i32), Vec<VisibleObject>> {
     let mut spatial_index: HashMap<(i32, i32), Vec<VisibleObject>> = HashMap::new();
 
-    for transform in &creature_query {
-        let (creature_x, creature_y) = (transform.translation.x, transform.translation.y);
+    let creatures: Vec<&Transform> = creature_query.iter().collect();
+    let food: Vec<&Transform> = food_query.iter().collect();
 
-        let cell_coordinates = get_cell_coordinates(creature_x, creature_y);
-
-        let creature = VisibleObject {
-            x: creature_x,
-            y: creature_y,
-            radius: 1.0,
-            category: ObjectCategory::Creature,
-        };
-
-        match spatial_index.get_mut(&cell_coordinates) {
-            Some(objects) => objects.push(creature),
-            None => {
-                spatial_index.insert(cell_coordinates, vec![creature]);
-            }
-        };
-    }
-
-    for transform in &food_query {
-        let (food_x, food_y) = (transform.translation.x, transform.translation.y);
-
-        let cell_coordinates = get_cell_coordinates(food_x, food_y);
-
-        let food = VisibleObject {
-            x: food_x,
-            y: food_y,
-            radius: 0.5,
-            category: ObjectCategory::Food,
-        };
-
-        match spatial_index.get_mut(&cell_coordinates) {
-            Some(objects) => objects.push(food),
-            None => {
-                spatial_index.insert(cell_coordinates, vec![food]);
-            }
-        };
-    }
+    add_to_spatial_index(&mut spatial_index, creatures, ObjectCategory::Creature);
+    add_to_spatial_index(&mut spatial_index, food, ObjectCategory::Food);
 
     spatial_index
+}
+
+fn add_to_spatial_index(
+    spatial_index: &mut HashMap<(i32, i32), Vec<VisibleObject>>,
+    objects: Vec<&Transform>,
+    category: ObjectCategory,
+) {
+    for transform in objects {
+        let (object_x, object_y) = (transform.translation.x, transform.translation.y);
+
+        let cell_coordinates = get_cell_coordinates(object_x, object_y);
+
+        let (category, radius) = get_category_radius_pair(&category);
+
+        let object = VisibleObject {
+            x: object_x,
+            y: object_y,
+            radius,
+            category,
+        };
+
+        match spatial_index.get_mut(&cell_coordinates) {
+            Some(objects) => objects.push(object),
+            None => {
+                spatial_index.insert(cell_coordinates, vec![object]);
+            }
+        };
+    }
+}
+
+fn get_category_radius_pair(category: &ObjectCategory) -> (ObjectCategory, f32) {
+    match category {
+        ObjectCategory::Creature => (ObjectCategory::Creature, 1.0),
+        ObjectCategory::Food => (ObjectCategory::Food, 0.5),
+        ObjectCategory::Obstacle => (ObjectCategory::Obstacle, 0.0),
+    }
 }
 
 fn get_cell_coordinates(x: f32, y: f32) -> (i32, i32) {
