@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use super::{
-    super::{connection::Connection, InputNeuron},
+    super::{InputNeuron, connection::Connection},
     Activation, InternalNeuron, SensoryInputs,
 };
 

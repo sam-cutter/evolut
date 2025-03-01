@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use std::f32::consts::{E, PI};
 
 use crate::model::creature::brain::{Brain, LinesOfSight};
-use crate::simulation::food::Food;
 use crate::simulation::SEEING_DISTANCE;
+use crate::simulation::food::Food;
 
 enum EyeAngle {
     Left,
