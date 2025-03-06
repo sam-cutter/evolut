@@ -1,4 +1,4 @@
-mod vision;
+pub mod vision;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
 use rand::Rng;
@@ -99,10 +99,13 @@ fn execute_creature_decisions(
         &Energy,
         &Age,
     )>,
-    transform_query: Query<&Transform, With<Brain>>,
-    food_query: Query<&Transform, With<Food>>,
+    transform_query: Query<(&Transform, Entity), With<Brain>>,
+    food_query: Query<(&Transform, Entity), With<Food>>,
 ) {
-    let spatial_index = vision::build_spatial_index(transform_query, food_query);
+    let spatial_index = spatial_index::build_spatial_index(
+        transform_query.iter().collect(),
+        food_query.iter().collect(),
+    );
 
     for (brain, transform, mut velocity, mut angular_velocity, energy, age) in &mut query {
         let mut internal_activation_cache: HashMap<Arc<InternalNeuron>, f32> = HashMap::new();

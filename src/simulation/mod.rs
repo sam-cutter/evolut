@@ -3,6 +3,7 @@
 mod creature;
 mod food;
 mod setup;
+mod spatial_index;
 
 use bevy::{math::Vec2, prelude::Component};
 

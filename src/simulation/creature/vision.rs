@@ -1,11 +1,10 @@
-use bevy::ecs::query::QueryIter;
 use bevy::prelude::*;
 use std::collections::HashMap;
 use std::f32::consts::{E, PI};
 
-use crate::model::creature::brain::{Brain, LinesOfSight};
+use crate::model::creature::brain::LinesOfSight;
 use crate::simulation::SEEING_DISTANCE;
-use crate::simulation::food::Food;
+use crate::simulation::spatial_index::{ObjectCategory, get_cell_coordinates};
 
 enum EyeAngle {
     Left,
@@ -19,17 +18,12 @@ const EYE_ANGLES: [(EyeAngle, f32); 3] = [
     (EyeAngle::Right, PI * 7.0 / 4.0),
 ];
 
-pub enum ObjectCategory {
-    Creature,
-    Food,
-    Obstacle,
-}
-
 pub struct VisibleObject {
     pub x: f32,
     pub y: f32,
     pub radius: f32,
     pub category: ObjectCategory,
+    pub entity: Entity,
 }
 
 pub fn compute_vision(
@@ -43,7 +37,7 @@ pub fn compute_vision(
     let (cell_x, cell_y) = get_cell_coordinates(creature_x, creature_y);
 
     // This forms a 3 by 3 grid, centred at the current cell.
-    let cells_to_search: Vec<(i32, i32)> = vec![
+    let cells_to_search = [
         (cell_x, cell_y),
         (cell_x - SEEING_DISTANCE * 2, cell_y),
         (cell_x + SEEING_DISTANCE * 2, cell_y),
@@ -185,62 +179,4 @@ pub fn compute_vision(
     }
 
     return lines_of_sight;
-}
-
-pub fn build_spatial_index(
-    creature_query: Query<&Transform, With<Brain>>,
-    food_query: Query<&Transform, With<Food>>,
-) -> HashMap<(i32, i32), Vec<VisibleObject>> {
-    let mut spatial_index: HashMap<(i32, i32), Vec<VisibleObject>> = HashMap::new();
-
-    let creatures: Vec<&Transform> = creature_query.iter().collect();
-    let food: Vec<&Transform> = food_query.iter().collect();
-
-    add_to_spatial_index(&mut spatial_index, creatures, ObjectCategory::Creature);
-    add_to_spatial_index(&mut spatial_index, food, ObjectCategory::Food);
-
-    spatial_index
-}
-
-fn add_to_spatial_index(
-    spatial_index: &mut HashMap<(i32, i32), Vec<VisibleObject>>,
-    objects: Vec<&Transform>,
-    category: ObjectCategory,
-) {
-    for transform in objects {
-        let (object_x, object_y) = (transform.translation.x, transform.translation.y);
-
-        let cell_coordinates = get_cell_coordinates(object_x, object_y);
-
-        let (category, radius) = get_category_radius_pair(&category);
-
-        let object = VisibleObject {
-            x: object_x,
-            y: object_y,
-            radius,
-            category,
-        };
-
-        match spatial_index.get_mut(&cell_coordinates) {
-            Some(objects) => objects.push(object),
-            None => {
-                spatial_index.insert(cell_coordinates, vec![object]);
-            }
-        };
-    }
-}
-
-fn get_category_radius_pair(category: &ObjectCategory) -> (ObjectCategory, f32) {
-    match category {
-        ObjectCategory::Creature => (ObjectCategory::Creature, 1.0),
-        ObjectCategory::Food => (ObjectCategory::Food, 0.5),
-        ObjectCategory::Obstacle => (ObjectCategory::Obstacle, 0.0),
-    }
-}
-
-fn get_cell_coordinates(x: f32, y: f32) -> (i32, i32) {
-    (
-        (x - x.rem_euclid((SEEING_DISTANCE * 2) as f32)) as i32,
-        (y - y.rem_euclid((SEEING_DISTANCE * 2) as f32)) as i32,
-    )
 }
