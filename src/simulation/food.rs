@@ -1,4 +1,6 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{prelude::*, time::common_conditions::on_timer};
 use rand::Rng;
 
 use super::{
@@ -20,26 +22,16 @@ pub struct FoodBundle {
     pub food: Food,
 }
 
-pub struct FoodPlugin;
-
-impl Plugin for FoodPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Startup, place_initial_food);
-        app.add_systems(FixedUpdate, check_consumption);
-    }
-}
-
-fn place_initial_food(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let mut generator = rand::thread_rng();
-
-    for _ in 0..INITIAL_FOOD {
+impl FoodBundle {
+    pub fn random(
+        materials: &mut ResMut<Assets<ColorMaterial>>,
+        meshes: &mut ResMut<Assets<Mesh>>,
+    ) -> Self {
         let circle = meshes.add(Circle::new(0.5));
 
-        commands.spawn(FoodBundle {
+        let mut generator = rand::thread_rng();
+
+        FoodBundle {
             mesh: Mesh2d(circle),
             mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(0.0, 1.0, 0.0))),
             transform: Transform {
@@ -52,8 +44,40 @@ fn place_initial_food(
             },
             visibility: Visibility::Visible,
             food: Food,
-        });
+        }
     }
+}
+
+pub struct FoodPlugin;
+
+impl Plugin for FoodPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, place_initial_food);
+        app.add_systems(FixedUpdate, check_consumption);
+
+        app.add_systems(
+            Update,
+            replace_food.run_if(on_timer(Duration::from_secs_f64(1.0))),
+        );
+    }
+}
+
+fn place_initial_food(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for _ in 0..INITIAL_FOOD {
+        commands.spawn(FoodBundle::random(&mut materials, &mut meshes));
+    }
+}
+
+fn replace_food(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    commands.spawn(FoodBundle::random(&mut materials, &mut meshes));
 }
 
 fn check_consumption(
