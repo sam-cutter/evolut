@@ -15,19 +15,16 @@ impl SensoryNeuron {
             0 => SensoryInput::Age,
             1 => SensoryInput::Speed,
             2 => SensoryInput::AngularVelocity,
-            3..=11 => SensoryInput::LineOfSight(match sensory_neuron_id {
-                3 => LineOfSight::LeftCreature,
-                4 => LineOfSight::LeftFood,
-                5 => LineOfSight::LeftObstacle,
+            3 => SensoryInput::StoredEnergy,
+            4..=9 => SensoryInput::LineOfSight(match sensory_neuron_id {
+                4 => LineOfSight::LeftCreature,
+                5 => LineOfSight::LeftFood,
                 6 => LineOfSight::MiddleCreature,
                 7 => LineOfSight::MiddleFood,
-                8 => LineOfSight::MiddleObstacle,
-                9 => LineOfSight::RightCreature,
-                10 => LineOfSight::RightFood,
-                11 => LineOfSight::RightObstacle,
+                8 => LineOfSight::RightCreature,
+                9 => LineOfSight::RightFood,
                 _ => unreachable!(),
             }),
-            12 => SensoryInput::StoredEnergy,
             _ => unreachable!(),
         };
 
@@ -70,13 +67,10 @@ pub enum SensoryInput {
 pub enum LineOfSight {
     LeftCreature,
     LeftFood,
-    LeftObstacle,
     MiddleCreature,
     MiddleFood,
-    MiddleObstacle,
     RightCreature,
     RightFood,
-    RightObstacle,
 }
 
 pub struct SensoryInputs {
@@ -91,11 +85,8 @@ pub struct SensoryInputs {
 pub struct LinesOfSight {
     pub left_creature: f32,
     pub left_food: f32,
-    pub left_obstacle: f32,
     pub middle_creature: f32,
     pub middle_food: f32,
-    pub middle_obstacle: f32,
     pub right_creature: f32,
     pub right_food: f32,
-    pub right_obstacle: f32,
 }

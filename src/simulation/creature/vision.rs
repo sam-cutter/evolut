@@ -155,17 +155,14 @@ pub fn compute_vision(
                             EyeAngle::Left => match object.category {
                                 ObjectCategory::Creature => &mut lines_of_sight.left_creature,
                                 ObjectCategory::Food => &mut lines_of_sight.left_food,
-                                ObjectCategory::Obstacle => &mut lines_of_sight.left_obstacle,
                             },
                             EyeAngle::Middle => match object.category {
                                 ObjectCategory::Creature => &mut lines_of_sight.middle_creature,
                                 ObjectCategory::Food => &mut lines_of_sight.middle_food,
-                                ObjectCategory::Obstacle => &mut lines_of_sight.middle_obstacle,
                             },
                             EyeAngle::Right => match object.category {
                                 ObjectCategory::Creature => &mut lines_of_sight.right_creature,
                                 ObjectCategory::Food => &mut lines_of_sight.right_food,
-                                ObjectCategory::Obstacle => &mut lines_of_sight.right_obstacle,
                             },
                         };
 

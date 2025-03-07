@@ -27,7 +27,6 @@ impl Plugin for SpatialIndexPlugin {
 pub enum ObjectCategory {
     Creature,
     Food,
-    Obstacle,
 }
 
 pub fn build_spatial_index(
@@ -81,7 +80,6 @@ fn get_category_radius_pair(category: &ObjectCategory) -> (ObjectCategory, f32) 
     match category {
         ObjectCategory::Creature => (ObjectCategory::Creature, 1.0),
         ObjectCategory::Food => (ObjectCategory::Food, 0.5),
-        ObjectCategory::Obstacle => (ObjectCategory::Obstacle, 0.0),
     }
 }
 

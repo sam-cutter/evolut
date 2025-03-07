@@ -278,7 +278,7 @@ fn build_tree(
 }
 
 fn calculate_sensory_neuron_id(source_id: u8) -> u8 {
-    source_id % 12
+    source_id % 9
 }
 
 fn calculate_action_neuron_id(destination_id: u8) -> u8 {
