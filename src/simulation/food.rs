@@ -4,7 +4,7 @@ use rand::Rng;
 use super::{
     INITIAL_FOOD, SEEING_DISTANCE,
     creature::Energy,
-    spatial_index::{self, ObjectCategory, get_cell_coordinates},
+    spatial_index::{ObjectCategory, SpatialIndex, get_cell_coordinates},
 };
 use crate::model::creature::brain::Brain;
 
@@ -57,17 +57,11 @@ fn place_initial_food(
 }
 
 fn check_consumption(
-    food_query: Query<(&Transform, Entity), With<Food>>,
     mut creature_query: Query<(&Transform, Entity, &mut Energy), With<Brain>>,
     mut commands: Commands,
+    spatial_index: Res<SpatialIndex>,
 ) {
-    let spatial_index = spatial_index::build_spatial_index(
-        creature_query
-            .iter()
-            .map(|(transform, entity, _)| (transform, entity))
-            .collect(),
-        food_query.iter().collect(),
-    );
+    let spatial_index = &spatial_index.index;
 
     for mut creature in &mut creature_query {
         let transform = creature.0;

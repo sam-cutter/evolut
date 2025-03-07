@@ -1,7 +1,27 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-use super::{SEEING_DISTANCE, creature::vision::VisibleObject};
+use super::{SEEING_DISTANCE, creature::vision::VisibleObject, food::Food};
+use crate::model::creature::brain::Brain;
+
+#[derive(Resource)]
+pub struct SpatialIndex {
+    pub index: HashMap<(i32, i32), Vec<VisibleObject>>,
+}
+
+pub struct SpatialIndexPlugin;
+
+impl Plugin for SpatialIndexPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(SpatialIndex {
+            index: HashMap::new(),
+        });
+
+        app.add_systems(Startup, build_spatial_index);
+
+        app.add_systems(FixedPreUpdate, build_spatial_index);
+    }
+}
 
 #[derive(PartialEq, Eq)]
 pub enum ObjectCategory {
@@ -11,15 +31,21 @@ pub enum ObjectCategory {
 }
 
 pub fn build_spatial_index(
-    creatures: Vec<(&Transform, Entity)>,
-    food: Vec<(&Transform, Entity)>,
-) -> HashMap<(i32, i32), Vec<VisibleObject>> {
+    creature_query: Query<(&Transform, Entity), With<Brain>>,
+    food_query: Query<(&Transform, Entity), With<Food>>,
+    mut spatial_index_resource: ResMut<SpatialIndex>,
+) {
+    let creatures = creature_query.iter().collect();
+    let food = food_query.iter().collect();
+
     let mut spatial_index: HashMap<(i32, i32), Vec<VisibleObject>> = HashMap::new();
 
     add_to_spatial_index(&mut spatial_index, creatures, ObjectCategory::Creature);
     add_to_spatial_index(&mut spatial_index, food, ObjectCategory::Food);
 
-    spatial_index
+    *spatial_index_resource = SpatialIndex {
+        index: spatial_index,
+    };
 }
 
 fn add_to_spatial_index(

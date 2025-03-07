@@ -4,7 +4,10 @@ use bevy::{prelude::*, time::common_conditions::on_timer};
 use rand::Rng;
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use super::{food::Food, *};
+use super::{
+    AngularVelocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE, GENOME_LENGTH, INITIAL_ENERGY,
+    Velocity, spatial_index::SpatialIndex,
+};
 use crate::model::creature::{
     brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron, SensoryInputs},
     genome::Genome,
@@ -99,18 +102,12 @@ fn execute_creature_decisions(
         &Energy,
         &Age,
     )>,
-    transform_query: Query<(&Transform, Entity), With<Brain>>,
-    food_query: Query<(&Transform, Entity), With<Food>>,
+    spatial_index: Res<SpatialIndex>,
 ) {
-    let spatial_index = spatial_index::build_spatial_index(
-        transform_query.iter().collect(),
-        food_query.iter().collect(),
-    );
-
     for (brain, transform, mut velocity, mut angular_velocity, energy, age) in &mut query {
         let mut internal_activation_cache: HashMap<Arc<InternalNeuron>, f32> = HashMap::new();
 
-        let lines_of_sight = vision::compute_vision(transform, &spatial_index);
+        let lines_of_sight = vision::compute_vision(transform, &spatial_index.index);
 
         let sensory_inputs = SensoryInputs {
             age: age.value,
