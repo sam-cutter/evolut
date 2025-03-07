@@ -47,7 +47,14 @@ impl Activation for SensoryNeuron {
         match self.input() {
             SensoryInput::Age => sensory_inputs.age,
             SensoryInput::AngularVelocity => sensory_inputs.angular_velocity,
-            SensoryInput::LineOfSight(_) => 0.1,
+            SensoryInput::LineOfSight(line_of_sight) => match line_of_sight {
+                LineOfSight::LeftCreature => sensory_inputs.lines_of_sight.left_creature,
+                LineOfSight::LeftFood => sensory_inputs.lines_of_sight.left_food,
+                LineOfSight::MiddleCreature => sensory_inputs.lines_of_sight.middle_creature,
+                LineOfSight::MiddleFood => sensory_inputs.lines_of_sight.middle_food,
+                LineOfSight::RightCreature => sensory_inputs.lines_of_sight.right_creature,
+                LineOfSight::RightFood => sensory_inputs.lines_of_sight.right_food,
+            },
             SensoryInput::Speed => sensory_inputs.speed,
             SensoryInput::StoredEnergy => sensory_inputs.stored_energy,
         }
