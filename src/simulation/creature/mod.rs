@@ -38,6 +38,7 @@ impl Plugin for CreaturePlugin {
             (
                 deduct_energy,
                 kill_creatures,
+                have_babies,
                 update_ages,
                 update_translations,
                 update_rotations,
@@ -54,6 +55,34 @@ impl Plugin for CreaturePlugin {
     }
 }
 
+fn spawn_creature(
+    commands: &mut Commands,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    transform: Transform,
+    genome: Genome,
+    brain: Brain,
+) {
+    let circle = meshes.add(Circle::new(1.0));
+
+    commands.spawn(CreatureBundle {
+        mesh: Mesh2d(circle),
+        mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(1.0, 0.0, 0.0))),
+        transform,
+        visibility: Visibility::Visible,
+        velocity: Velocity {
+            value: Vec2::default(),
+        },
+        angular_velocity: AngularVelocity { value: 0.0 },
+        energy: Energy {
+            value: INITIAL_ENERGY,
+        },
+        brain,
+        genome,
+        age: Age { value: 0.0 },
+    });
+}
+
 fn spawn_generation_zero(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -62,34 +91,26 @@ fn spawn_generation_zero(
     let mut generator = rand::thread_rng();
 
     for _ in 0..GENERATION_ZERO_SIZE {
-        let circle = meshes.add(Circle::new(1.0));
+        let transform = Transform {
+            translation: Vec3::new(
+                generator.gen_range(-50.0..=50.0),
+                generator.gen_range(-50.0..=50.0),
+                0.0,
+            ),
+            ..default()
+        };
 
         let genome = Genome::random(GENOME_LENGTH);
         let brain = Brain::new(&genome);
 
-        commands.spawn(CreatureBundle {
-            mesh: Mesh2d(circle),
-            mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(1.0, 0.0, 0.0))),
-            transform: Transform {
-                translation: Vec3::new(
-                    generator.gen_range(-50.0..=50.0),
-                    generator.gen_range(-50.0..=50.0),
-                    0.0,
-                ),
-                ..default()
-            },
-            visibility: Visibility::Visible,
-            velocity: Velocity {
-                value: Vec2::default(),
-            },
-            angular_velocity: AngularVelocity { value: 0.0 },
-            energy: Energy {
-                value: INITIAL_ENERGY,
-            },
-            brain,
+        spawn_creature(
+            &mut commands,
+            &mut materials,
+            &mut meshes,
+            transform,
             genome,
-            age: Age { value: 0.0 },
-        });
+            brain,
+        );
     }
 }
 
@@ -174,6 +195,36 @@ fn kill_creatures(query: Query<(&Energy, Entity)>, mut commands: Commands) {
     for (energy, entity) in &query {
         if energy.value <= 0.0 {
             commands.entity(entity).despawn();
+        }
+    }
+}
+
+fn have_babies(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut query: Query<(&mut Energy, &Genome, &Transform), With<Brain>>,
+) {
+    for (mut energy, genome, transform) in &mut query {
+        if energy.value >= 10000.0 {
+            energy.value -= 5000.0;
+
+            let new_genome = genome.clone();
+            let new_brain = Brain::new(&new_genome);
+            let mut new_transform = Transform {
+                translation: transform.translation,
+                ..default()
+            };
+            new_transform.translation.x += 1.0;
+
+            spawn_creature(
+                &mut commands,
+                &mut materials,
+                &mut meshes,
+                new_transform,
+                new_genome,
+                new_brain,
+            );
         }
     }
 }

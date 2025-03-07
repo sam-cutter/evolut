@@ -3,6 +3,7 @@ use rand::Rng;
 use std::{error::Error, fmt::Display};
 
 /// Represents one neural connection in a creature's brain.
+#[derive(Clone)]
 pub struct Gene {
     /// The source of the connection.
     /// If the most significant bit of the source id is a 0 (i.e. less than 128), the source is a sensory neuron.

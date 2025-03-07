@@ -7,7 +7,7 @@ use bevy::prelude::Component;
 pub use gene::Gene;
 
 /// Represents a list of a creature's genes. This genome is required to build a creature's brain.
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Genome {
     genes: Vec<Gene>,
 }
