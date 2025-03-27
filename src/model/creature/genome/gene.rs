@@ -50,6 +50,44 @@ impl Gene {
         }
     }
 
+    pub fn mutated(&self, mutation_rate: f32) -> Self {
+        let mutated_source_id = Self::mutate_u8(self.source_id, mutation_rate);
+        let mutated_destination_id = Self::mutate_u8(self.destination_id, mutation_rate);
+        let mutated_weight = Self::mutate_f32(self.weight, mutation_rate);
+
+        Self {
+            source_id: mutated_source_id,
+            destination_id: mutated_destination_id,
+            weight: mutated_weight,
+        }
+    }
+
+    fn mutate_u8(number: u8, mutation_rate: f32) -> u8 {
+        let mut generator = rand::thread_rng();
+        let mut mutated = number;
+
+        for i in 0..8 {
+            if generator.gen_range(0.0..=1.0) < mutation_rate {
+                mutated ^= 1 << i;
+            }
+        }
+
+        return mutated;
+    }
+
+    fn mutate_f32(number: f32, mutation_rate: f32) -> f32 {
+        let mut generator = rand::thread_rng();
+        let mut mutated = number.to_bits();
+
+        for i in 0..32 {
+            if generator.gen_range(0.0..=1.0) < mutation_rate {
+                mutated ^= 1 << i;
+            }
+        }
+
+        f32::from_bits(mutated)
+    }
+
     /// Creates a new gene from a given hex string.
     pub fn from_hex(hex: &str) -> Result<Self> {
         if hex.len() != 12 {
