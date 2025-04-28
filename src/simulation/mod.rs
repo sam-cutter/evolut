@@ -13,11 +13,11 @@ pub use setup::SetupPlugin;
 pub use spatial_index::SpatialIndexPlugin;
 
 /// The maximum number of internal neurons a creature's brain can contain.
-pub const MAX_INTERNAL_NEURONS: u8 = 5;
+pub const MAX_INTERNAL_NEURONS: u8 = 10;
 /// The maximum number of genes that may exist in a creature's genome.
-pub const GENOME_LENGTH: usize = 10;
+pub const GENOME_LENGTH: usize = 20;
 /// The number of creatures in the first generation.
-pub const GENERATION_ZERO_SIZE: u32 = 100;
+pub const GENERATION_ZERO_SIZE: u32 = 1000;
 /// The frequency, measured in Hz, at which the physics system should be updated.
 pub const FIXED_UPDATE_FREQUENCY: f64 = 1000.0;
 /// The frequency, measured in Hz, at which the creatures should recalculate their brain state;

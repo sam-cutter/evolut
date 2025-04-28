@@ -36,8 +36,8 @@ impl FoodBundle {
             mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(0.0, 1.0, 0.0))),
             transform: Transform {
                 translation: Vec3::new(
-                    generator.gen_range(-50.0..=50.0),
-                    generator.gen_range(-50.0..=50.0),
+                    generator.gen_range(-100.0..=100.0),
+                    generator.gen_range(-100.0..=100.0),
                     -1.0,
                 ),
                 ..default()
@@ -57,7 +57,7 @@ impl Plugin for FoodPlugin {
 
         app.add_systems(
             Update,
-            replace_food.run_if(on_timer(Duration::from_secs_f64(1.0))),
+            replace_food.run_if(on_timer(Duration::from_secs_f64(0.1))),
         );
     }
 }

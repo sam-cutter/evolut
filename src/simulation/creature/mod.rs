@@ -6,7 +6,7 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use super::{
     AngularVelocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE, GENOME_LENGTH, INITIAL_ENERGY,
-    Velocity, spatial_index::SpatialIndex,
+    MUTATION_RATE, Velocity, spatial_index::SpatialIndex,
 };
 use crate::model::creature::{
     brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron, SensoryInputs},
@@ -63,10 +63,10 @@ fn spawn_creature(
     genome: Genome,
     brain: Brain,
 ) {
-    let circle = meshes.add(Circle::new(1.0));
+    let body = meshes.add(Circle::new(1.0));
 
     commands.spawn(CreatureBundle {
-        mesh: Mesh2d(circle),
+        mesh: Mesh2d(body),
         mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(1.0, 0.0, 0.0))),
         transform,
         visibility: Visibility::Visible,
@@ -209,7 +209,7 @@ fn have_babies(
         if energy.value >= 10000.0 {
             energy.value -= 5000.0;
 
-            let new_genome = genome.clone();
+            let new_genome = genome.mutated(MUTATION_RATE);
             let new_brain = Brain::new(&new_genome);
             let mut new_transform = Transform {
                 translation: transform.translation,

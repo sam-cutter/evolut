@@ -33,4 +33,14 @@ impl Genome {
 
         Genome::new(genes)
     }
+
+    pub fn mutated(&self, mutation_rate: f32) -> Self {
+        let mut genes: Vec<Gene> = Vec::new();
+
+        for gene in &self.genes {
+            genes.push(gene.mutated(mutation_rate));
+        }
+
+        Self { genes }
+    }
 }
