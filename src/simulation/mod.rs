@@ -27,9 +27,11 @@ pub const INITIAL_ENERGY: f32 = 1000.0;
 /// The distance that a creature is able to see
 pub const SEEING_DISTANCE: i32 = 10;
 /// The initial quantity of food to spawn.
-pub const INITIAL_FOOD: i32 = 1000;
+pub const INITIAL_FOOD: i32 = 10000;
 /// On average, 1 in every MUTATION_RATE bits will be flipped
 pub const MUTATION_RATE: f32 = 1.0 / 1000.0;
+/// The bounds of the world.
+pub const WORLD_BOUNDS: f32 = 1000.0;
 
 #[derive(Component)]
 pub struct Velocity {

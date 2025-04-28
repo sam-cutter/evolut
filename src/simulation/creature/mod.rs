@@ -6,7 +6,7 @@ use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use super::{
     AngularVelocity, BRAIN_UPDATE_FREQUENCY, GENERATION_ZERO_SIZE, GENOME_LENGTH, INITIAL_ENERGY,
-    MUTATION_RATE, Velocity, spatial_index::SpatialIndex,
+    MUTATION_RATE, Velocity, WORLD_BOUNDS, spatial_index::SpatialIndex,
 };
 use crate::model::creature::{
     brain::{ActionOutput, Activation, Brain, InternalNeuron, Neuron, SensoryInputs},
@@ -93,8 +93,8 @@ fn spawn_generation_zero(
     for _ in 0..GENERATION_ZERO_SIZE {
         let transform = Transform {
             translation: Vec3::new(
-                generator.gen_range(-50.0..=50.0),
-                generator.gen_range(-50.0..=50.0),
+                generator.gen_range(-WORLD_BOUNDS..=WORLD_BOUNDS),
+                generator.gen_range(-WORLD_BOUNDS..=WORLD_BOUNDS),
                 0.0,
             ),
             ..default()

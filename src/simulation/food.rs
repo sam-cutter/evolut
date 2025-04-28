@@ -4,7 +4,7 @@ use bevy::{prelude::*, time::common_conditions::on_timer};
 use rand::Rng;
 
 use super::{
-    INITIAL_FOOD, SEEING_DISTANCE,
+    INITIAL_FOOD, SEEING_DISTANCE, WORLD_BOUNDS,
     creature::Energy,
     spatial_index::{ObjectCategory, SpatialIndex, get_cell_coordinates},
 };
@@ -36,8 +36,8 @@ impl FoodBundle {
             mesh_material: MeshMaterial2d(materials.add(Color::linear_rgb(0.0, 1.0, 0.0))),
             transform: Transform {
                 translation: Vec3::new(
-                    generator.gen_range(-100.0..=100.0),
-                    generator.gen_range(-100.0..=100.0),
+                    generator.gen_range(-WORLD_BOUNDS..=WORLD_BOUNDS),
+                    generator.gen_range(-WORLD_BOUNDS..=WORLD_BOUNDS),
                     -1.0,
                 ),
                 ..default()
